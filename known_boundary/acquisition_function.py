@@ -209,7 +209,7 @@ def SLogEI(X,dim,f_best,c,f_mean,model): # X is a 2-dimensional array because we
   X = X.reshape(-1,dim)
 
   mean,var = model.predict(X,include_likelihood=False)  
-  var[var<10**(-12)]=10**(-12)
+  #var[var<10**(-12)]=10**(-12)
   sigma = np.sqrt(var)
   mu = mean+f_mean
 
@@ -254,20 +254,26 @@ def SLogTEI(X,dim,f_best,c,f_mean,fstar,model):
   X = X.reshape(-1,dim)
 
   mean,var = model.predict(X,include_likelihood=False)  
-  var[var<10**(-12)]=10**(-12)
+  #var[var<10**(-12)]=10**(-12)
   sigma = np.sqrt(var)
   mu = mean+f_mean
   
-  C = c+f_best
-  part1 = C*norm.cdf((np.log(C)-mu)/sigma)-np.exp(mu+sigma**2/2)*norm.cdf((np.log(C)-mu-sigma**2)/sigma)
+
   
-  C = c+fstar
-  part2 = C*norm.cdf((np.log(C)-mu)/sigma)-np.exp(mu+sigma**2/2)*norm.cdf((np.log(C)-mu-sigma**2)/sigma)
   
+  # C = c+f_best
+  # part1 = C*norm.cdf((np.log(C)-mu)/sigma)-np.exp(mu+sigma**2/2)*norm.cdf((np.log(C)-mu-sigma**2)/sigma)
+  
+  # C = c+fstar
+  # part2 = C*norm.cdf((np.log(C)-mu)/sigma)-np.exp(mu+sigma**2/2)*norm.cdf((np.log(C)-mu-sigma**2)/sigma)
+  
+  
+  part1 = SLogEI(X,dim,f_best,c,f_mean,model).reshape(-1,1)
+  part2 = SLogEI(X,dim,fstar,c,f_mean,model).reshape(-1,1)
   
   part3 = (f_best-fstar)*norm.cdf(  (np.log(fstar+c)-mu) /sigma ) 
   
-  out = part1-part2+part3
+  out = part1 - part2  +part3
   
   return out.ravel()  #make the shape to be 1 dimensional
 

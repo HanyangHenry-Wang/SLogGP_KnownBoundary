@@ -41,7 +41,7 @@ def range_transform(lower1,upper1,lower2,upper2,ratio): #lower 2 must be larger 
     return lower_res,upper_res
 
 
-def opt_model(train_X,train_Y,dim,model_type,noise=1e-5,**kwargs):
+def opt_model(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
     
     obj_holder = []
     parameter_holder = []
@@ -54,9 +54,12 @@ def opt_model(train_X,train_Y,dim,model_type,noise=1e-5,**kwargs):
         
         parameter_num = 2
         
+        
         for ii in range(int(3**parameter_num/2)+1):
             
-            np.random.seed(ii)
+            np.random.seed(ii+seed)
+            
+            60*(parameter_num-1)
             
             lengthscale_init = np.random.uniform(lengthscale_range[0],lengthscale_range[1],1)[0]
             variance_init = np.random.uniform(variance_range[0],variance_range[1],1)[0]
@@ -99,6 +102,7 @@ def opt_model(train_X,train_Y,dim,model_type,noise=1e-5,**kwargs):
             
             m.rbf.lengthscale.constrain_bounded(lengthscale_range[0],lengthscale_range[1])
             m.rbf.variance.constrain_bounded(variance_range[0],variance_range[1])
+            m.Gaussian_noise.fix(noise) 
             
             m.optimize()
             
@@ -113,5 +117,4 @@ def opt_model(train_X,train_Y,dim,model_type,noise=1e-5,**kwargs):
     index = np.argmin(obj_holder)
     
     return parameter_holder[index]
-            
     
