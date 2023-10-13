@@ -12,7 +12,7 @@ class SLogGP(WarpingFunction):
     the range. Notice the term 'd', which scales the
     linear trend.
     """
-    def __init__(self, lower,upper,n_terms =1, initial_y=None):
+    def __init__(self, lower,upper,n_terms =1, psi_bound = True, initial_y=None):
         """
         n_terms specifies the number of tanh terms to be used
         """
@@ -21,7 +21,11 @@ class SLogGP(WarpingFunction):
         self.psi = np.ones((self.n_terms, 1))
         super(SLogGP, self).__init__(name='SlogGP')
         self.psi = Param('psi', self.psi)  #Param will register psi as a parameter
-        self.psi[:, :].constrain_bounded(lower,upper) #put constraint in the psi space
+        if psi_bound:
+            self.psi[:, :].constrain_bounded(lower,upper) #put constraint in the psi space
+        else:
+            self.psi[:, :].constrain_positive()
+            
         self.link_parameter(self.psi)
         self.initial_y = initial_y
 

@@ -36,29 +36,29 @@ temp['function'] = Ackley(dim=2,negate=False)
 temp['fstar'] =  0 
 function_information.append(temp)
 
-temp={}
-temp['name']='Beale2D' 
-temp['function'] = Beale(negate=False)
-temp['fstar'] =  0. 
-function_information.append(temp)
+# temp={}
+# temp['name']='Beale2D' 
+# temp['function'] = Beale(negate=False)
+# temp['fstar'] =  0. 
+# function_information.append(temp)
 
-temp={}
-temp['name']='Levy2D' 
-temp['function'] = Levy(dim=2,negate=False)
-temp['fstar'] =  0.
-function_information.append(temp)
+# temp={}
+# temp['name']='Levy2D' 
+# temp['function'] = Levy(dim=2,negate=False)
+# temp['fstar'] =  0.
+# function_information.append(temp)
 
-temp={}
-temp['name']='Rosenbrock2D' 
-temp['function'] = Rosenbrock(dim=2,negate=False)
-temp['fstar'] =  0. 
-function_information.append(temp)
+# temp={}
+# temp['name']='Rosenbrock2D' 
+# temp['function'] = Rosenbrock(dim=2,negate=False)
+# temp['fstar'] =  0. 
+# function_information.append(temp)
 
-temp={}
-temp['name']='SixHumpCamel2D' 
-temp['function'] = SixHumpCamel(negate=False)
-temp['fstar'] =  -1.0317
-function_information.append(temp)
+# temp={}
+# temp['name']='SixHumpCamel2D' 
+# temp['function'] = SixHumpCamel(negate=False)
+# temp['fstar'] =  -1.0317
+# function_information.append(temp)
 
 
 
@@ -84,213 +84,213 @@ for information in function_information:
     else:
         step_size = 4
         
-    lengthscale_range = [0.01,2]
-    variance_range = [0.01**2,4**2]
-    noise = 1e-5
+    lengthscale_range = [0.03,2]
+    variance_range = [0.01**2,16]
+    noise = 1e-6
         
     
-    ############################# GP+EI ###################################
-    BO_EI = []
+    # ############################# GP+EI ###################################
+    # BO_EI = []
 
-    for exp in range(N):
+    # for exp in range(N):
         
-        print(exp)
+    #     print(exp)
         
-        seed = exp
+    #     seed = exp
 
-        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-        Y_BO = torch.tensor(
-            [fun(x) for x in X_BO], dtype=dtype, device=device
-        ).reshape(-1,1)
+    #     X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+    #     Y_BO = torch.tensor(
+    #         [fun(x) for x in X_BO], dtype=dtype, device=device
+    #     ).reshape(-1,1)
 
-        best_record = [Y_BO.min().item()]
-        np.random.seed(1234)
+    #     best_record = [Y_BO.min().item()]
+    #     np.random.seed(1234)
 
-        for i in range(iter_num):
+    #     for i in range(iter_num):
 
-                print(i)
+    #             print(i)
             
-                train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
-                train_X = normalize(X_BO, bounds)
+    #             train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+    #             train_X = normalize(X_BO, bounds)
                 
-                minimal = train_Y.min().item()
+    #             minimal = train_Y.min().item()
                 
-                train_Y = train_Y.numpy()
-                train_X = train_X.numpy()
+    #             train_Y = train_Y.numpy()
+    #             train_X = train_X.numpy()
                 
-                # train the GP
-                if i%step_size == 0:
+    #             # train the GP
+    #             if i%step_size == 0:
                     
-                    parameters = opt_model(train_X,train_Y,dim,'GP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range)
+    #                 parameters = opt_model(train_X,train_Y,dim,'GP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range)
                         
-                    lengthscale = parameters[0]
-                    variance = parameters[1]
+    #                 lengthscale = parameters[0]
+    #                 variance = parameters[1]
                     
-                    # print('lengthscale: ',lengthscale)
-                    # print('variance: ',variance)
+    #                 print('lengthscale: ',lengthscale)
+    #                 print('variance: ',variance)
                     
-                kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
-                m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
-                m.Gaussian_noise.fix(noise)
+    #             kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
+    #             m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
+    #             m.Gaussian_noise.fix(noise)
                 
-                standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
-                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
-                Y_next = fun(X_next).reshape(-1,1)
+    #             standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
+    #             X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
+    #             Y_next = fun(X_next).reshape(-1,1)
 
-                # Append data
-                X_BO = torch.cat((X_BO, X_next), dim=0)
-                Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+    #             # Append data
+    #             X_BO = torch.cat((X_BO, X_next), dim=0)
+    #             Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
-                best_record.append(Y_BO.min().item())
+    #             best_record.append(Y_BO.min().item())
                 
-                #print(best_record[-1])
+    #             print(best_record[-1])
                 
-        best_record = np.array(best_record) 
-        BO_EI.append(best_record)
+    #     best_record = np.array(best_record) 
+    #     BO_EI.append(best_record)
         
-    np.savetxt('exp_res/'+information['name']+'_GP+EI', BO_EI, delimiter=',')
+    # np.savetxt('exp_res/'+information['name']+'_GP+EI', BO_EI, delimiter=',')
     
     
-    ######################## SlogGP+logEI#######################################
-    SLogEI_noboundary = []
+    # ######################## SlogGP+logEI#######################################
+    # SLogEI_noboundary = []
 
-    for exp in range(N):
+    # for exp in range(N):
 
-        seed = exp
+    #     seed = exp
         
-        print(exp)
+    #     print(exp)
 
-        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-        Y_BO = torch.tensor(
-            [fun(x) for x in X_BO], dtype=dtype, device=device
-        ).reshape(-1,1)
+    #     X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+    #     Y_BO = torch.tensor(
+    #         [fun(x) for x in X_BO], dtype=dtype, device=device
+    #     ).reshape(-1,1)
 
 
 
-        best_record = [Y_BO.min().item()]
-        np.random.seed(1234)
+    #     best_record = [Y_BO.min().item()]
+    #     np.random.seed(1234)
 
-        for i in range(iter_num):
+    #     for i in range(iter_num):
 
-                print('inner loop: ',i)
+    #             print('inner loop: ',i)
             
-                train_Y = Y_BO.numpy()
-                train_X = normalize(X_BO, bounds)
-                train_X = train_X.numpy()
+    #             train_Y = Y_BO.numpy()
+    #             train_X = normalize(X_BO, bounds)
+    #             train_X = train_X.numpy()
                 
-                train_Y_std = np.std(train_Y)
-                lower = -np.min(train_Y)+10**(-6)
-                upper = lower+min(300,5*train_Y_std)
+    #             train_Y_std = np.std(train_Y)
+    #             lower = -np.min(train_Y)+10**(-6)
+    #             upper = lower+min(300,5*train_Y_std)
                 
-                c_range = [lower,upper]
+    #             c_range = [lower,upper]
 
-                if i%step_size == 0:
+    #             if i%step_size == 0:
                     
-                    parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+    #                 parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
-                    lengthscale = parameters[0]
-                    variance = parameters[1]
-                    c = parameters[2]
+    #                 lengthscale = parameters[0]
+    #                 variance = parameters[1]
+    #                 c = parameters[2]
                     
-                    # print('lengthscale is ',lengthscale)
-                    # print('variance is ',variance)
-                    # print('c is ',c)
+    #                 # print('lengthscale is ',lengthscale)
+    #                 # print('variance is ',variance)
+    #                 # print('c is ',c)
                 
                 
-                warp_Y = np.log(train_Y+c)
-                mean_warp_Y = np.mean(warp_Y) # use to predict mean
-                warp_Y_standard = warp_Y-mean_warp_Y
+    #             warp_Y = np.log(train_Y+c)
+    #             mean_warp_Y = np.mean(warp_Y) # use to predict mean
+    #             warp_Y_standard = warp_Y-mean_warp_Y
                 
                 
-                kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
-                m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
-                m.Gaussian_noise.variance.fix(noise)
+    #             kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
+    #             m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
+    #             m.Gaussian_noise.variance.fix(noise)
                 
-                standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
-                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
-                Y_next = fun(X_next).reshape(-1,1)
+    #             standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
+    #             X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
+    #             Y_next = fun(X_next).reshape(-1,1)
 
-                # Append data
-                X_BO = torch.cat((X_BO, X_next), dim=0)
-                Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+    #             # Append data
+    #             X_BO = torch.cat((X_BO, X_next), dim=0)
+    #             Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
-                best_record.append(Y_BO.min().item())
-                #print(best_record[-1])
+    #             best_record.append(Y_BO.min().item())
+    #             print(best_record[-1])
                 
-        best_record = np.array(best_record)         
-        SLogEI_noboundary.append(best_record)
+    #     best_record = np.array(best_record)         
+    #     SLogEI_noboundary.append(best_record)
         
-    np.savetxt('exp_res/'+information['name']+'_SLogGP+logEI', SLogEI_noboundary, delimiter=',')
+    # np.savetxt('exp_res/'+information['name']+'_SLogGP+logEI', SLogEI_noboundary, delimiter=',')
     
     
-    ########################## enforced boundary ##################################
+    # ########################## enforced boundary ##################################
     
-    SLogEI_enforceboundary = []
+    # SLogEI_enforceboundary = []
 
-    for exp in range(N):
+    # for exp in range(N):
 
-        seed = exp
+    #     seed = exp
         
-        print(exp)
+    #     print(exp)
 
-        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-        Y_BO = torch.tensor(
-            [fun(x) for x in X_BO], dtype=dtype, device=device
-        ).reshape(-1,1)
+    #     X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+    #     Y_BO = torch.tensor(
+    #         [fun(x) for x in X_BO], dtype=dtype, device=device
+    #     ).reshape(-1,1)
 
 
 
-        best_record = [Y_BO.min().item()]
-        np.random.seed(1234)
+    #     best_record = [Y_BO.min().item()]
+    #     np.random.seed(1234)
 
-        for i in range(iter_num):
+    #     for i in range(iter_num):
 
-                #print('inner loop: ',i)
+    #             #print('inner loop: ',i)
             
-                train_Y = Y_BO.numpy()
-                train_X = normalize(X_BO, bounds)
-                train_X = train_X.numpy()
+    #             train_Y = Y_BO.numpy()
+    #             train_X = normalize(X_BO, bounds)
+    #             train_X = train_X.numpy()
                 
-                lower = -fstar+10**(-6)
-                upper = lower+0.3
+    #             lower = -fstar+10**(-6)
+    #             upper = lower+0.3
                 
-                c_range = [lower,upper]
+    #             c_range = [lower,upper]
 
-                if i%step_size == 0:
+    #             if i%step_size == 0:
                     
-                    parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+    #                 parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
-                    lengthscale = parameters[0]
-                    variance = parameters[1]
-                    c = parameters[2]
+    #                 lengthscale = parameters[0]
+    #                 variance = parameters[1]
+    #                 c = parameters[2]
                 
                 
-                warp_Y = np.log(train_Y+c)
-                mean_warp_Y = np.mean(warp_Y) # use to predict mean
-                warp_Y_standard = warp_Y-mean_warp_Y
+    #             warp_Y = np.log(train_Y+c)
+    #             mean_warp_Y = np.mean(warp_Y) # use to predict mean
+    #             warp_Y_standard = warp_Y-mean_warp_Y
                 
                 
-                kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
-                m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
-                m.Gaussian_noise.variance.fix(noise)
+    #             kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
+    #             m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
+    #             m.Gaussian_noise.variance.fix(noise)
                 
-                standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
-                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
-                Y_next = fun(X_next).reshape(-1,1)
+    #             standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
+    #             X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
+    #             Y_next = fun(X_next).reshape(-1,1)
 
-                # Append data
-                X_BO = torch.cat((X_BO, X_next), dim=0)
-                Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+    #             # Append data
+    #             X_BO = torch.cat((X_BO, X_next), dim=0)
+    #             Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
-                best_record.append(Y_BO.min().item())
-                #print(best_record[-1])
+    #             best_record.append(Y_BO.min().item())
+    #             #print(best_record[-1])
                 
-        best_record = np.array(best_record)         
-        SLogEI_enforceboundary.append(best_record)
+    #     best_record = np.array(best_record)         
+    #     SLogEI_enforceboundary.append(best_record)
 
-    np.savetxt('exp_res/'+information['name']+'_SLogGP+logEI(enforceboundary)', SLogEI_enforceboundary, delimiter=',')
+    # np.savetxt('exp_res/'+information['name']+'_SLogGP+logEI(enforceboundary)', SLogEI_enforceboundary, delimiter=',')
     
-    ########################## enforced boundary ##################################
+    # ########################## enforced boundary ##################################
     
     SLogTEI_enforceboundary = []
 
@@ -308,28 +308,33 @@ for information in function_information:
 
 
         best_record = [Y_BO.min().item()]
+        print(best_record[-1])
         np.random.seed(1234)
 
         for i in range(iter_num):
 
-                #print('inner loop: ',i)
+                print('inner loop: ',i)
             
                 train_Y = Y_BO.numpy()
                 train_X = normalize(X_BO, bounds)
                 train_X = train_X.numpy()
                 
-                lower = -fstar+10**(-6)
+                lower = -fstar+10**(-5)
                 upper = lower+0.3
                 
                 c_range = [lower,upper]
 
                 if i%step_size == 0:
                     
-                    parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+                    parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
                     lengthscale = parameters[0]
                     variance = parameters[1]
                     c = parameters[2]
+                    
+                    print('lengthscale: ',lengthscale)
+                    print('variance: ',variance)
+                    print('c: ',c)
                 
                 
                 warp_Y = np.log(train_Y+c)
@@ -350,7 +355,7 @@ for information in function_information:
                 Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
                 best_record.append(Y_BO.min().item())
-                #print(best_record[-1])
+                print(best_record[-1])
                 
         best_record = np.array(best_record)         
         SLogTEI_enforceboundary.append(best_record)
@@ -358,78 +363,78 @@ for information in function_information:
     np.savetxt('exp_res/'+information['name']+'_SLogGP+logTEI(enforceboundary)', SLogTEI_enforceboundary, delimiter=',')
     
     
-    ######################### no boundary + logTEI ##################################
+    # ######################### no boundary + logTEI ##################################
     
-    SLogTEI_enforceboundary = []
+    # SLogTEI_enforceboundary = []
 
-    for exp in range(N):
+    # for exp in range(N):
 
-        seed = exp
+    #     seed = exp
         
-        print(exp)
+    #     print(exp)
 
-        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-        Y_BO = torch.tensor(
-            [fun(x) for x in X_BO], dtype=dtype, device=device
-        ).reshape(-1,1)
+    #     X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+    #     Y_BO = torch.tensor(
+    #         [fun(x) for x in X_BO], dtype=dtype, device=device
+    #     ).reshape(-1,1)
 
 
 
-        best_record = [Y_BO.min().item()]
-        np.random.seed(1234)
+    #     best_record = [Y_BO.min().item()]
+    #     np.random.seed(1234)
 
-        for i in range(iter_num):
+    #     for i in range(iter_num):
 
-                #print('inner loop: ',i)
+    #             #print('inner loop: ',i)
             
-                train_Y = Y_BO.numpy()
-                train_X = normalize(X_BO, bounds)
-                train_X = train_X.numpy()
+    #             train_Y = Y_BO.numpy()
+    #             train_X = normalize(X_BO, bounds)
+    #             train_X = train_X.numpy()
                 
-                train_Y_std = np.std(train_Y)
-                lower = -np.min(train_Y)+10**(-6)
-                upper = lower+min(300,5*train_Y_std)
+    #             train_Y_std = np.std(train_Y)
+    #             lower = -np.min(train_Y)+10**(-6)
+    #             upper = lower+min(300,5*train_Y_std)
                 
-                c_range = [lower,upper]
+    #             c_range = [lower,upper]
 
-                if i%step_size == 0:
+    #             if i%step_size == 0:
                     
-                    parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+    #                 parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
-                    lengthscale = parameters[0]
-                    variance = parameters[1]
-                    c = parameters[2]
+    #                 lengthscale = parameters[0]
+    #                 variance = parameters[1]
+    #                 c = parameters[2]
                 
                 
-                warp_Y = np.log(train_Y+c)
-                mean_warp_Y = np.mean(warp_Y) # use to predict mean
-                warp_Y_standard = warp_Y-mean_warp_Y
+    #             warp_Y = np.log(train_Y+c)
+    #             mean_warp_Y = np.mean(warp_Y) # use to predict mean
+    #             warp_Y_standard = warp_Y-mean_warp_Y
                 
                 
-                kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
-                m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
-                m.Gaussian_noise.variance.fix(noise)
+    #             kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
+    #             m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
+    #             m.Gaussian_noise.variance.fix(noise)
                 
-                if -c>fstar: # we do not truncate
-                    #print('logEI!!')
-                    standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
-                else:
-                    #print('logTEI!!')
-                    standard_next_X = SLogTEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y,fstar=fstar)
-                #print(standard_next_X)
+    #             if -c>fstar: # we do not truncate
+    #                 #print('logEI!!')
+    #                 standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
+    #             else:
+    #                 #print('logTEI!!')
+    #                 standard_next_X = SLogTEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y,fstar=fstar)
+    #             #print(standard_next_X)
             
-                #standard_next_X = SLogTEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y,fstar=fstar)
-                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
-                Y_next = fun(X_next).reshape(-1,1)
+    #             #standard_next_X = SLogTEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y,fstar=fstar)
+    #             X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
+    #             Y_next = fun(X_next).reshape(-1,1)
 
-                # Append data
-                X_BO = torch.cat((X_BO, X_next), dim=0)
-                Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+    #             # Append data
+    #             X_BO = torch.cat((X_BO, X_next), dim=0)
+    #             Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
-                best_record.append(Y_BO.min().item())
-                #print(best_record[-1])
+    #             best_record.append(Y_BO.min().item())
+    #             #print(best_record[-1])
                 
-        best_record = np.array(best_record)         
-        SLogTEI_enforceboundary.append(best_record)
+    #     best_record = np.array(best_record)         
+    #     SLogTEI_enforceboundary.append(best_record)
 
-    np.savetxt('exp_res/'+information['name']+'_SLogGP+logTEI', SLogTEI_enforceboundary, delimiter=',')
+    # np.savetxt('exp_res/'+information['name']+'_SLogGP+logTEI', SLogTEI_enforceboundary, delimiter=',')
