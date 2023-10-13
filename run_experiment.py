@@ -1,6 +1,6 @@
 import botorch
 from known_boundary.acquisition_function import EI_acquisition_opt,SLogTEI_acquisition_opt,SLogEI_acquisition_opt
-from known_boundary.utlis import  get_initial_points,transform,opt_model
+from known_boundary.utlis import  get_initial_points,transform,opt_model_MLE
 import numpy as np
 import GPy
 import torch
@@ -121,7 +121,7 @@ for information in function_information:
     #             # train the GP
     #             if i%step_size == 0:
                     
-    #                 parameters = opt_model(train_X,train_Y,dim,'GP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range)
+    #                 parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range)
                         
     #                 lengthscale = parameters[0]
     #                 variance = parameters[1]
@@ -186,7 +186,7 @@ for information in function_information:
 
     #             if i%step_size == 0:
                     
-    #                 parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+    #                 parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
     #                 lengthscale = parameters[0]
     #                 variance = parameters[1]
@@ -258,7 +258,7 @@ for information in function_information:
 
     #             if i%step_size == 0:
                     
-    #                 parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+    #                 parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
     #                 lengthscale = parameters[0]
     #                 variance = parameters[1]
@@ -326,7 +326,7 @@ for information in function_information:
 
                 if i%step_size == 0:
                     
-                    parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+                    parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
                     lengthscale = parameters[0]
                     variance = parameters[1]
@@ -399,7 +399,7 @@ for information in function_information:
 
     #             if i%step_size == 0:
                     
-    #                 parameters = opt_model(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
+    #                 parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
     #                 lengthscale = parameters[0]
     #                 variance = parameters[1]
