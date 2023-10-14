@@ -132,13 +132,14 @@ def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_par
         
         train_Y_std = np.std(train_Y)
         lower = -np.min(train_Y)+10**(-6)
-        upper = lower+min(300,5*train_Y_std)
+        upper = lower+2000 #min(300,5*train_Y_std)   
+        #upper = lower+300 
         
         c_range = [lower,upper] #since we do not bound the psi in SLogGP, this bound is useless, but we need this term in initial constructor
         
         for ii in range(restart_num):
             
-            np.random.seed(ii)
+            np.random.seed(ii+seed)
             
             lengthscale_init = np.random.uniform(lengthscale_range[0],lengthscale_range[1],1)[0]
             variance_init = np.random.uniform(variance_range[0],variance_range[1],1)[0]
