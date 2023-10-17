@@ -1,13 +1,14 @@
 botorch==0.8.5
-Cython = 3.0.2
+Cython == 3.0.2
 GPy==1.10.0
-Gpytorch = 1.10
+Gpytorch == 1.10
 numpy==1.23.5
 scikit_learn==1.0.2
 matplotlib==3.4.3
 scipy==1.10.1
 torch==2.0.1
 xgboost==1.7.3
-pandas = 1.5.3
-swig = 4.1.1
-box2d-py = 2.3.8
+pandas == 1.5.3
+pygame == 2.5.2
+swig == 4.1.1
+box2d-py == 2.3.8
