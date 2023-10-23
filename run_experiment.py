@@ -33,30 +33,30 @@ function_information = []
 # temp['fstar'] =  0.
 # function_information.append(temp)
 
-temp={}
-temp['name']='Branin2D' 
-temp['function'] = Branin(negate=False)
-temp['fstar'] =  0.397887 
-function_information.append(temp)
+# temp={}
+# temp['name']='Branin2D' 
+# temp['function'] = Branin(negate=False)
+# temp['fstar'] =  0.397887 
+# function_information.append(temp)
 
 
-temp={}
-temp['name']='Beale2D' 
-temp['function'] = Beale(negate=False)
-temp['fstar'] =  0. 
-function_information.append(temp)
+# temp={}
+# temp['name']='Beale2D' 
+# temp['function'] = Beale(negate=False)
+# temp['fstar'] =  0. 
+# function_information.append(temp)
 
-temp={}
-temp['name']='SixHumpCamel2D' 
-temp['function'] = SixHumpCamel(negate=False)
-temp['fstar'] =  -1.0317
-function_information.append(temp)
+# temp={}
+# temp['name']='SixHumpCamel2D' 
+# temp['function'] = SixHumpCamel(negate=False)
+# temp['fstar'] =  -1.0317
+# function_information.append(temp)
 
-temp={}
-temp['name']='Hartmann3D' 
-temp['function'] = Hartmann(dim=3,negate=False)
-temp['fstar'] =  -3.86278
-function_information.append(temp)
+# temp={}
+# temp['name']='Hartmann3D' 
+# temp['function'] = Hartmann(dim=3,negate=False)
+# temp['fstar'] =  -3.86278
+# function_information.append(temp)
 
 # temp={}
 # temp['name']='Powell4D' 
@@ -66,11 +66,11 @@ function_information.append(temp)
 # function_information.append(temp)
 
 
-# temp={}
-# temp['name']='Levy6D' 
-# temp['function'] = Levy(dim=6,negate=False)
-# temp['fstar'] =  0.
-# function_information.append(temp)
+temp={}
+temp['name']='Levy4D' 
+temp['function'] = Levy(dim=4,negate=False)
+temp['fstar'] =  0.
+function_information.append(temp)
 
 
 # temp={}
@@ -107,7 +107,7 @@ for information in function_information:
         iter_num = 50
     elif dim<=7:
         step_size = 3
-        iter_num = 150
+        iter_num = 120
     else:
         step_size = 4
         iter_num = 200
@@ -243,6 +243,7 @@ for information in function_information:
                 print(best_record[-1])
                 
                 noise = variance*10**(-5)   #adaptive noise
+                noise = np.round(noise, -int(np.floor(np.log10(noise))))
                 print('noise: ',noise)
                 
                 
@@ -309,6 +310,7 @@ for information in function_information:
                 print(best_record[-1])
                 
                 noise = variance*10**(-5)   #adaptive noise
+                noise = np.round(noise, -int(np.floor(np.log10(noise))))
                 print('noise: ',noise)
                 
         best_record = np.array(best_record) 
@@ -366,6 +368,10 @@ for information in function_information:
                 if lcb < fstar_standard:
                     Trans = True
                     #print('transform!')
+                
+                noise = variance*10**(-5)   #adaptive noise
+                noise = np.round(noise, -int(np.floor(np.log10(noise))))
+                print('noise: ',noise)
             
             else:                        
                 train_Y_transform = transform(y=train_Y,fstar=fstar_standard)
@@ -394,6 +400,7 @@ for information in function_information:
             print(best_record[-1])
             
             noise = variance*10**(-5)   #adaptive noise
+            noise = np.round(noise, -int(np.floor(np.log10(noise))))
             print('noise: ',noise)
 
 
