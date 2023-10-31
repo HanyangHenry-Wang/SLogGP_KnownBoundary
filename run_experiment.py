@@ -33,11 +33,11 @@ function_information = []
 # temp['fstar'] =  0.
 # function_information.append(temp)
 
-temp={}
-temp['name']='Branin2D' 
-temp['function'] = Branin(negate=False)
-temp['fstar'] =  0.397887 
-function_information.append(temp)
+# temp={}
+# temp['name']='Branin2D' 
+# temp['function'] = Branin(negate=False)
+# temp['fstar'] =  0.397887 
+# function_information.append(temp)
 
 
 temp={}
@@ -46,11 +46,11 @@ temp['function'] = Beale(negate=False)
 temp['fstar'] =  0. 
 function_information.append(temp)
 
-temp={}
-temp['name']='SixHumpCamel2D' 
-temp['function'] = SixHumpCamel(negate=False)
-temp['fstar'] =  -1.0317
-function_information.append(temp)
+# temp={}
+# temp['name']='SixHumpCamel2D' 
+# temp['function'] = SixHumpCamel(negate=False)
+# temp['fstar'] =  -1.0317
+# function_information.append(temp)
 
 # temp={}
 # temp['name']='Hartmann3D' 
@@ -97,8 +97,8 @@ for information in function_information:
     standard_bounds=np.array([0.,1.]*dim).reshape(-1,2)
     
     n_init = 4*dim
-    #iter_num = 50
-    N = 15
+
+    N = 100
     fstar = information['fstar']
     
     print('fstar is: ',fstar)
@@ -164,7 +164,8 @@ for information in function_information:
                 kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
                 m.Gaussian_noise.fix(noise)
-    
+
+                np.random.seed(i)
                 standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
@@ -233,6 +234,7 @@ for information in function_information:
                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
                 m.Gaussian_noise.fix(noise)
                 
+                np.random.seed(i)
                 standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal,f_star=fstar_standard)
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
@@ -301,6 +303,7 @@ for information in function_information:
                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
                 m.Gaussian_noise.fix(noise)
 
+                np.random.seed(i)
                 standard_next_X = MES_acquisition_opt(m,standard_bounds,fstar_standard)
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
@@ -363,7 +366,8 @@ for information in function_information:
                 kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
                 m.Gaussian_noise.fix(noise)
-
+                
+                np.random.seed(i)
                 standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
                 
                 beta = np.sqrt(np.log(train_X.shape[0]))
@@ -389,6 +393,7 @@ for information in function_information:
                 kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
                 m.Gaussian_noise.fix(noise)
+                np.random.seed(i)
                 standard_next_X,erm_value = ERM_acquisition_opt(m,bounds=standard_bounds,fstar=fstar_standard,mean_temp=mean_temp)
                 print(standard_next_X)
                 
@@ -463,9 +468,9 @@ for information in function_information:
                     variance = parameters[1]
                     c = parameters[2]
                     
-                    print('lengthscale is ',lengthscale)
-                    print('variance is ',variance)
-                    print('lower bound is ',-c)
+                    # print('lengthscale is ',lengthscale)
+                    # print('variance is ',variance)
+                    # print('lower bound is ',-c)
                 
                 
                 warp_Y = np.log(train_Y+c)
@@ -477,6 +482,7 @@ for information in function_information:
                 m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
                 m.Gaussian_noise.variance.fix(noise)
                 
+                np.random.seed(i)
                 standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
@@ -591,7 +597,8 @@ for information in function_information:
                 kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
                 m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
                 m.Gaussian_noise.variance.fix(noise)
-                  
+                
+                np.random.seed(i)
                 standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
@@ -616,8 +623,7 @@ for information in function_information:
     
 
 
-
-    ######################## SlogGP (boundary)+logTEI#######################################
+ ######################## SlogGP (boundary)+logTEI#######################################
     
     LogTEI_boundary = []
     
@@ -637,7 +643,11 @@ for information in function_information:
         best_record = [Y_BO.min().item()]
         print(best_record[-1])
         np.random.seed(1234)
+        
 
+        uncertainty_index = 1
+        tolerance_level = 2.5
+        
         for i in range(iter_num):
 
                 print('inner loop: ',i)
@@ -663,6 +673,7 @@ for information in function_information:
                 if i%step_size == 0:
                     
                     if uncertainty_index<=25:
+                        #print('MAP')
                     
                         best_parameter = opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_parameter,noise=noise,seed=i)
             
@@ -676,20 +687,26 @@ for information in function_information:
                             temp = (np.log(abs(-c-fstar_shifted)+np.exp(mu_prior))-mu_prior)/sigma_prior - tolerance_level
                             uncertainty_index += 2*temp
                         
-                            #print('Not Use prior')
+                            #print('MLE')
                             parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
             
                             lengthscale = parameters[0]
                             variance = parameters[1]
                             c = parameters[2]
                     else: 
+                        #print('MLE')
                         #print('Not Use prior because uncertainty is huge')
                         parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range,c_range=c_range)                
         
                         lengthscale = parameters[0]
                         variance = parameters[1]
                         c = parameters[2]
-                
+                    
+                    
+                    # print('lengthscale: ',lengthscale)
+                    # print('variance: ',variance)
+                    # print('lower bound: ',-c+np.min(train_Y))
+                    # print('shift fstar: ',fstar_shifted)
                 
                 
                 warp_Y = np.log(train_Y+c)
@@ -701,17 +718,16 @@ for information in function_information:
                 m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
                 m.Gaussian_noise.variance.fix(noise)
                 
-                if -c>fstar_shifted:
-                    #print('logEI')
+                np.random.seed(i)
+                if -c>=fstar_shifted:
+                    print('logEI')
                     standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
                 else:
-                    #print('logTEI')
-                    standard_next_X = SLogTEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y,fstar=fstar_shifted)
-                
+                    print('logTEI')
+                    standard_next_X = SLogTEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y,fstar=fstar_shifted)  
+                #standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y)
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
-                
-                
                 
 
                 # Append data
@@ -731,4 +747,5 @@ for information in function_information:
         
     np.savetxt('exp_res/'+information['name']+'_SLogGP(boundary)+logTEI', LogTEI_boundary, delimiter=',')
     
+
     
