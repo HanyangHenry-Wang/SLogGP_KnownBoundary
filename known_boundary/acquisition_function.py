@@ -256,7 +256,7 @@ def SLogTEI(X,dim,f_best,c,f_mean,fstar,model):
   
   part3 = (f_best-fstar)*norm.cdf(  (np.log(fstar+c)-mu) /sigma ) 
   
-  out = part1 - part2 +part3
+  out = part1 - part2 # +part3
   
   return out.ravel()  #make the shape to be 1 dimensional
 

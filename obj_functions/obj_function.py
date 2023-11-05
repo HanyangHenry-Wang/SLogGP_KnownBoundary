@@ -82,7 +82,7 @@ class XGBoost:
         self.task = task
         
         if task == 'skin':
-            data = np.genfromtxt('Skin_NonSkin.txt', dtype=np.int32)
+            data = np.genfromtxt('obj_functions/Skin_NonSkin.txt', dtype=np.int32)
             outputs = data[:,3]
             inputs = data[:,0:3]
             X_train1, X_test1, y_train1, y_test1 = train_test_split(inputs, outputs, test_size=0.85, random_state=self.seed)
@@ -92,7 +92,7 @@ class XGBoost:
             self.y_train1 = y_train1
             
         elif task == 'bank':
-            data = pd.read_csv('BankNote_Authentication.csv')
+            data = pd.read_csv('obj_functions/BankNote_Authentication.csv')
             X = data.loc[:, data.columns!='class']
             y = data['class']
             outputs = np.array(y)
@@ -102,7 +102,7 @@ class XGBoost:
             self.X_train1 = X_train1
             self.y_train1 = y_train1
         elif task == 'iris':
-            df_data = pd.read_csv('Iris.csv')
+            df_data = pd.read_csv('obj_functions/Iris.csv')
             class_mapping = {'Iris-setosa':0, 'Iris-versicolor':1,'Iris-virginica':2}
             df_data['Species'] = df_data['Species'].map(class_mapping)
             df_data = df_data.drop(axis=1,columns=['Id'])
@@ -134,7 +134,7 @@ class XGBoost:
             self.y_train1 = y_train1
 
             
-    def __call__(self, X): # this is actually a Branin function
+    def __call__(self, X):
         
         X = X.numpy().reshape(6,)
 
@@ -150,4 +150,4 @@ class XGBoost:
                     min_child_weight=min_child_weight,colsample_bytree=colsample, n_estimators = 2, random_state=1, objective = 'multi:softmax', booster='gbtree',eval_metric='logloss',silent=None)
             score = np.array(cross_val_score(reg, X=self.X_train1, y=self.y_train1).mean())
       
-        return torch.tensor([score*100])
+        return 100-torch.tensor([score*100])

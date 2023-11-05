@@ -3,7 +3,7 @@ from botorch.utils.sampling import draw_sobol_samples
 import numpy as np
 import GPy
 from known_boundary.SLogGP import SLogGP
-
+import random
 import logging
 logging.getLogger('lengthscale').disabled = True
 logging.getLogger('variance').disabled = True
@@ -53,21 +53,29 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
         variance_range = kwargs['variance_range']
         
         parameter_num = 2
-        restart_num = int(3**parameter_num)+1
+        restart_num = int(3**parameter_num)+5
         
         
         for ii in range(restart_num):
             
             np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             lengthscale_init = np.random.uniform(lengthscale_range[0],lengthscale_range[1],1)[0]
             variance_init = np.random.uniform(variance_range[0],variance_range[1],1)[0]
             
             kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale_init,variance=variance_init)
+            
+            np.random.seed(ii+seed)
+            random.seed(ii+seed)
+            
             m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
             m.rbf.lengthscale.constrain_bounded(lengthscale_range[0],lengthscale_range[1])
             m.rbf.variance.constrain_bounded(variance_range[0],variance_range[1])
             m.Gaussian_noise.fix(noise)
+            
+            np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             m.optimize()
             
@@ -85,15 +93,19 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
         c_range = kwargs['c_range']
                 
         parameter_num = 3
-        restart_num = int(3**parameter_num)+1
+        restart_num = int(3**parameter_num)+5
         
         for ii in range(restart_num):
             
             np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             lengthscale_init = np.random.uniform(lengthscale_range[0],lengthscale_range[1],1)[0]
             variance_init = np.random.uniform(variance_range[0],variance_range[1],1)[0]
             c_init = np.random.uniform(c_range[0],c_range[1],1)[0]
+            
+            np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             m = GPy.models.WarpedGP(train_X.reshape(-1,dim), train_Y.reshape(-1,1),warping_function=SLogGP(lower=c_range[0],upper=c_range[1],n_terms =1))
             m.rbf.lengthscale = lengthscale_init
@@ -103,6 +115,9 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
             m.rbf.lengthscale.constrain_bounded(lengthscale_range[0],lengthscale_range[1])
             m.rbf.variance.constrain_bounded(variance_range[0],variance_range[1])
             m.Gaussian_noise.fix(noise) 
+            
+            np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             m.optimize()
             
@@ -122,7 +137,7 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
 def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_parameter,noise=1e-5,seed=0):
         
         parameter_num = 3
-        restart_num = int(3**parameter_num)+1
+        restart_num = int(3**parameter_num)+5
         
         mu_prior = prior_parameter[0]  #prior_parameter 
         sigma_prior = prior_parameter[1]  #prior_parameter 
@@ -140,12 +155,16 @@ def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_par
         for ii in range(restart_num):
             
             np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             lengthscale_init = np.random.uniform(lengthscale_range[0],lengthscale_range[1],1)[0]
             variance_init = np.random.uniform(variance_range[0],variance_range[1],1)[0]
             c_init = np.random.uniform(c_range[0],c_range[1],1)[0]
             
             prior = GPy.priors.LogGaussian(mu=mu_prior, sigma=sigma_prior) ########## prior
+            
+            np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             m = GPy.models.WarpedGP(train_X.reshape(-1,dim), train_Y.reshape(-1,1),warping_function=SLogGP(lower=c_range[0],upper=c_range[1],n_terms =1,psi_bound = False))
             m.SlogGP.psi.set_prior(prior, warning=False) ########## prior
@@ -157,6 +176,9 @@ def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_par
             m.rbf.lengthscale.constrain_bounded(lengthscale_range[0],lengthscale_range[1])
             m.rbf.variance.constrain_bounded(variance_range[0],variance_range[1])
             m.Gaussian_noise.fix(noise) 
+            
+            np.random.seed(ii+seed)
+            random.seed(ii+seed)
             
             m.optimize()
             
