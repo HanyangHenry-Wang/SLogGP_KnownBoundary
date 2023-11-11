@@ -134,7 +134,7 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
     return parameter_holder[index]
 
 
-def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_parameter,noise=1e-5,seed=0):
+def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,c_range,prior_parameter,noise=1e-5,seed=0):
         
         parameter_num = 3
         restart_num = int(3**parameter_num)+5
@@ -145,12 +145,7 @@ def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_par
         obj_holder = []
         parameter_holder = []
         
-        train_Y_std = np.std(train_Y)
-        lower = -np.min(train_Y)+10**(-6)
-        upper = lower+2000 #min(300,5*train_Y_std)   
-        #upper = lower+300 
-        
-        c_range = [lower,upper] #since we do not bound the psi in SLogGP, this bound is useless, but we need this term in initial constructor
+    
         
         for ii in range(restart_num):
             
@@ -160,6 +155,7 @@ def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,prior_par
             lengthscale_init = np.random.uniform(lengthscale_range[0],lengthscale_range[1],1)[0]
             variance_init = np.random.uniform(variance_range[0],variance_range[1],1)[0]
             c_init = np.random.uniform(c_range[0],c_range[1],1)[0]
+
             
             prior = GPy.priors.LogGaussian(mu=mu_prior, sigma=sigma_prior) ########## prior
             
