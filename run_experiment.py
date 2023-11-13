@@ -58,11 +58,6 @@ function_information.append(temp)
 # temp['fstar'] =  -3.86278
 # function_information.append(temp)
 
-# temp={}
-# temp['name']='Hartmann6D' 
-# temp['function'] = Hartmann(dim=6,negate=False)
-# temp['fstar'] =  -3.32237
-# function_information.append(temp)
 
 # temp={}
 # temp['name']='DixonPrice2D' 
@@ -111,8 +106,8 @@ for information in function_information:
         step_size = 2
         iter_num = 50
     elif dim<=8:
-        step_size = 2
-        iter_num = 80
+        step_size = 3
+        iter_num = 100
     else:
         step_size = 3
         iter_num = 150
@@ -124,315 +119,317 @@ for information in function_information:
     print(information['name'])
         
     
-    # ############################# GP+EI ###################################
-    # BO_EI = []
-    # noise = 1e-6
+    ############################# GP+EI ###################################
+    BO_EI = []
+    noise = 1e-6
 
-    # for exp in range(N):
+    for exp in range(N):
         
-    #     print(exp)
+        print(exp)
         
-    #     seed = exp+50
+        seed = exp
 
-    #     X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-    #     Y_BO = torch.tensor(
-    #         [fun(x) for x in X_BO], dtype=dtype, device=device
-    #     ).reshape(-1,1)
+        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+        Y_BO = torch.tensor(
+            [fun(x) for x in X_BO], dtype=dtype, device=device
+        ).reshape(-1,1)
 
-    #     best_record = [Y_BO.min().item()]
-    #     np.random.seed(1234)
+        best_record = [Y_BO.min().item()]
+        np.random.seed(1234)
 
-    #     for i in range(iter_num):
+        for i in range(iter_num):
 
-    #             print(i)
+                print(i)
             
-    #             train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
-    #             train_X = normalize(X_BO, bounds)
+                train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+                train_X = normalize(X_BO, bounds)
                 
-    #             minimal = train_Y.min().item()
+                minimal = train_Y.min().item()
                 
-    #             train_Y = train_Y.numpy()
-    #             train_X = train_X.numpy()
+                train_Y = train_Y.numpy()
+                train_X = train_X.numpy()
                 
-    #             # train the GP
-    #             if i%step_size == 0:
+                # train the GP
+                if i%step_size == 0:
                     
-    #                 parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
+                    parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
                         
-    #                 lengthscale = parameters[0]
-    #                 variance = parameters[1]
+                    lengthscale = parameters[0]
+                    variance = parameters[1]
                     
-    #                 # print('lengthscale: ',lengthscale)
-    #                 # print('variance: ',variance)
+                    # print('lengthscale: ',lengthscale)
+                    # print('variance: ',variance)
                     
-    #             kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
-    #             m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
-    #             m.Gaussian_noise.fix(noise)
+                kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
+                m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
+                m.Gaussian_noise.fix(noise)
 
-    #             np.random.seed(i)
-    #             standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
-    #             X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
-    #             Y_next = fun(X_next).reshape(-1,1)
+                np.random.seed(i)
+                standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
+                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
+                Y_next = fun(X_next).reshape(-1,1)
 
-    #             # Append data
-    #             X_BO = torch.cat((X_BO, X_next), dim=0)
-    #             Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+                # Append data
+                X_BO = torch.cat((X_BO, X_next), dim=0)
+                Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
-    #             best_record.append(Y_BO.min().item())
+                best_record.append(Y_BO.min().item())
                 
-    #             print(best_record[-1])
+                print(best_record[-1])
                 
-    #             noise = variance*10**(-5)   #adaptive noise
-    #             noise = np.round(noise, -int(np.floor(np.log10(noise))))
-    #             print('noise: ',noise)
+                noise = variance*10**(-5)   #adaptive noise
+                noise = np.round(noise, -int(np.floor(np.log10(noise))))
+                print('noise: ',noise)
                 
-    #     best_record = np.array(best_record) 
-    #     BO_EI.append(best_record)
+        best_record = np.array(best_record) 
+        BO_EI.append(best_record)
         
-    # np.savetxt('exp_res/low_dimension/'+information['name']+'_GP+EI2', BO_EI, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_GP+EI', BO_EI, delimiter=',')
     
     
-    # ############################# GP+TEI ###################################
-    # BO_TEI = []
+    ############################# GP+TEI ###################################
+    BO_TEI = []
 
-    # for exp in range(N):
+    for exp in range(N):
         
-    #     print(exp)
+        print(exp)
         
-    #     seed = exp+50
+        seed = exp
 
-    #     X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-    #     Y_BO = torch.tensor(
-    #         [fun(x) for x in X_BO], dtype=dtype, device=device
-    #     ).reshape(-1,1)
+        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+        Y_BO = torch.tensor(
+            [fun(x) for x in X_BO], dtype=dtype, device=device
+        ).reshape(-1,1)
 
-    #     best_record = [Y_BO.min().item()]
-    #     np.random.seed(1234)
+        best_record = [Y_BO.min().item()]
+        np.random.seed(1234)
 
-    #     for i in range(iter_num):
+        for i in range(iter_num):
 
-    #             print(i)
+                print(i)
             
-    #             train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
-    #             train_X = normalize(X_BO, bounds)
-    #             fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
-    #             fstar_standard = fstar_standard.item()
+                train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+                train_X = normalize(X_BO, bounds)
+                fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
+                fstar_standard = fstar_standard.item()
                 
-    #             minimal = train_Y.min().item()
+                minimal = train_Y.min().item()
                 
-    #             train_Y = train_Y.numpy()
-    #             train_X = train_X.numpy()
+                train_Y = train_Y.numpy()
+                train_X = train_X.numpy()
                 
-    #             # train the GP
-    #             if i%step_size == 0:
+                # train the GP
+                if i%step_size == 0:
                     
-    #                 parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
+                    parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
                         
-    #                 lengthscale = parameters[0]
-    #                 variance = parameters[1]
+                    lengthscale = parameters[0]
+                    variance = parameters[1]
                     
-    #                 # print('lengthscale: ',lengthscale)
-    #                 # print('variance: ',variance)
+                    # print('lengthscale: ',lengthscale)
+                    # print('variance: ',variance)
                     
-    #             kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
-    #             m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
-    #             m.Gaussian_noise.fix(noise)
+                kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
+                m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
+                m.Gaussian_noise.fix(noise)
                 
-    #             np.random.seed(i)
-    #             standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal,f_star=fstar_standard)
-    #             X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
-    #             Y_next = fun(X_next).reshape(-1,1)
+                np.random.seed(i)
+                standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal,f_star=fstar_standard)
+                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
+                Y_next = fun(X_next).reshape(-1,1)
 
-    #             # Append data
-    #             X_BO = torch.cat((X_BO, X_next), dim=0)
-    #             Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+                # Append data
+                X_BO = torch.cat((X_BO, X_next), dim=0)
+                Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
-    #             best_record.append(Y_BO.min().item())
+                best_record.append(Y_BO.min().item())
                 
-    #             print(best_record[-1])
+                print(best_record[-1])
                 
-    #             noise = variance*10**(-5)   #adaptive noise
-    #             noise = np.round(noise, -int(np.floor(np.log10(noise))))
-    #             print('noise: ',noise)
+                noise = variance*10**(-5)   #adaptive noise
+                noise = np.round(noise, -int(np.floor(np.log10(noise))))
+                print('noise: ',noise)
                 
                 
-    #     best_record = np.array(best_record) 
-    #     BO_TEI.append(best_record)
+        best_record = np.array(best_record) 
+        BO_TEI.append(best_record)
         
-    # np.savetxt('exp_res/low_dimension'+information['name']+'_GP+TEI2', BO_TEI, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_GP+TEI', BO_TEI, delimiter=',')
     
     
-#     ##################################################### GP+MES ##################################################
-#     BO_MES = []
+    ##################################################### GP+MES ##################################################
+    BO_MES = []
 
-#     for exp in range(N):
+    for exp in range(N):
 
-#         seed = exp
+        seed = exp
         
-#         print(exp)
+        print(exp)
     
-#         X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-#         Y_BO = torch.tensor(
-#             [fun(x) for x in X_BO], dtype=dtype, device=device
-#         ).reshape(-1,1)
+        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+        Y_BO = torch.tensor(
+            [fun(x) for x in X_BO], dtype=dtype, device=device
+        ).reshape(-1,1)
         
 
-#         best_record = [Y_BO.min().item()]
+        best_record = [Y_BO.min().item()]
 
-#         np.random.seed(1234)
+        np.random.seed(1234)
 
-#         for i in range(iter_num):
+        for i in range(iter_num):
             
             
-#                 train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
-#                 train_X = normalize(X_BO, bounds)
+                train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+                train_X = normalize(X_BO, bounds)
                 
-#                 fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
-#                 fstar_standard = fstar_standard.item()
+                fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
+                fstar_standard = fstar_standard.item()
                 
-#                 train_Y = train_Y.numpy()
-#                 train_X = train_X.numpy()
+                train_Y = train_Y.numpy()
+                train_X = train_X.numpy()
                 
-#                 # train the GP
+                # train the GP
    
-#                 if i%step_size == 0:
+                if i%step_size == 0:
                 
-#                     parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
+                    parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
                         
-#                     lengthscale = parameters[0]
-#                     variance = parameters[1]
+                    lengthscale = parameters[0]
+                    variance = parameters[1]
 
                     
-#                 kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
-#                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
-#                 m.Gaussian_noise.fix(noise)
+                kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
+                m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
+                m.Gaussian_noise.fix(noise)
 
-#                 np.random.seed(i)
-#                 standard_next_X = MES_acquisition_opt(m,standard_bounds,fstar_standard)
-#                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
-#                 Y_next = fun(X_next).reshape(-1,1)
+                np.random.seed(i)
+                standard_next_X = MES_acquisition_opt(m,standard_bounds,fstar_standard)
+                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
+                Y_next = fun(X_next).reshape(-1,1)
 
-#                 # Append data
-#                 X_BO = torch.cat((X_BO, X_next), dim=0)
-#                 Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+                # Append data
+                X_BO = torch.cat((X_BO, X_next), dim=0)
+                Y_BO = torch.cat((Y_BO, Y_next), dim=0)
                 
-#                 best_record.append(Y_BO.min().item())
-#                 print(best_record[-1])
+                best_record.append(Y_BO.min().item())
+                print(best_record[-1])
                 
-#                 noise = variance*10**(-5)   #adaptive noise
-#                 noise = np.round(noise, -int(np.floor(np.log10(noise))))
-#                 print('noise: ',noise)
+                noise = variance*10**(-5)   #adaptive noise
+                noise = np.round(noise, -int(np.floor(np.log10(noise))))
+                print('noise: ',noise)
                 
-#         best_record = np.array(best_record) 
-#         BO_MES.append(best_record)
+        best_record = np.array(best_record) 
+        BO_MES.append(best_record)
         
-#     np.savetxt('exp_res/'+information['name']+'_GP+MES', BO_MES, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_GP+MES', BO_MES, delimiter=',')
     
     
-#   ###################################### ERM ##############################################
-#     BO_ERM = []
-#     for exp in range(N):
+  ###################################### ERM ##############################################
+    BO_ERM = []
+    for exp in range(N):
 
-#         print(exp)  
-#         seed = exp
+        print(exp)  
+        seed = exp
         
-#         Trans = False
+        Trans = False
 
-#         X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
-#         Y_BO = torch.tensor(
-#                     [fun(x) for x in X_BO], dtype=dtype, device=device
-#                 ).reshape(-1,1)
+        X_BO = get_initial_points(bounds, n_init,device,dtype,seed=seed)
+        Y_BO = torch.tensor(
+                    [fun(x) for x in X_BO], dtype=dtype, device=device
+                ).reshape(-1,1)
 
-#         best_record = [Y_BO.min().item()]
+        best_record = [Y_BO.min().item()]
 
-#         np.random.seed(1234)
+        np.random.seed(1234)
 
-#         for i in range(iter_num):
+        for i in range(iter_num):
 
-#             print(i)
-#             train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
-#             train_X = normalize(X_BO, bounds)
+            print(i)
+            train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+            train_X = normalize(X_BO, bounds)
             
-#             train_Y = train_Y.numpy()
-#             train_X = train_X.numpy()
+            train_Y = train_Y.numpy()
+            train_X = train_X.numpy()
             
-#             fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
-#             fstar_standard = fstar_standard.item()
+            fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
+            fstar_standard = fstar_standard.item()
             
-#             if not Trans:
-#                 minimal = np.min(train_Y)
-#                 if i%step_size == 0:
-#                     parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
+            if not Trans:
+                minimal = np.min(train_Y)
+                if i%step_size == 0:
+                    parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range)
                         
-#                     lengthscale = parameters[0]
-#                     variance = parameters[1]
+                    lengthscale = parameters[0]
+                    variance = parameters[1]
                     
-#                 kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
-#                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
-#                 m.Gaussian_noise.fix(noise)
+                kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
+                m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
+                m.Gaussian_noise.fix(noise)
                 
-#                 np.random.seed(i)
-#                 standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
+                np.random.seed(i)
+                standard_next_X = EI_acquisition_opt(m,bounds=standard_bounds,f_best=minimal)
                 
-#                 beta = np.sqrt(np.log(train_X.shape[0]))
-#                 _,lcb = LCB_acquisition_opt(m,standard_bounds,beta)
-#                 if lcb < fstar_standard:
-#                     Trans = True
-#                     #print('transform!')
+                beta = np.sqrt(np.log(train_X.shape[0]))
+                _,lcb = LCB_acquisition_opt(m,standard_bounds,beta)
+                if lcb < fstar_standard:
+                    Trans = True
+                    #print('transform!')
                 
-#                 noise = variance*10**(-5)   #adaptive noise
-#                 noise = np.round(noise, -int(np.floor(np.log10(noise))))
-#                 print('noise: ',noise)
+                noise = variance*10**(-5)   #adaptive noise
+                noise = np.round(noise, -int(np.floor(np.log10(noise))))
+                print('noise: ',noise)
             
-#             else:    
-#                 print('trans!')                    
-#                 train_Y_transform = transform(y=train_Y,fstar=fstar_standard)
-#                 mean_temp = np.mean(train_Y_transform)
+            else:    
+                print('trans!')                    
+                train_Y_transform = transform(y=train_Y,fstar=fstar_standard)
+                mean_temp = np.mean(train_Y_transform)
                 
-#                 if i%step_size == 0:
-#                     parameters = opt_model_MLE(train_X,(train_Y_transform-mean_temp),dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range) 
-#                     lengthscale = parameters[0]
-#                     variance = parameters[1]
+                if i%step_size == 0:
+                    parameters = opt_model_MLE(train_X,(train_Y_transform-mean_temp),dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range) 
+                    lengthscale = parameters[0]
+                    variance = parameters[1]
                 
-#                 kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
-#                 m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
-#                 m.Gaussian_noise.fix(noise)
-#                 np.random.seed(i)
-#                 standard_next_X,erm_value = ERM_acquisition_opt(m,bounds=standard_bounds,fstar=fstar_standard,mean_temp=mean_temp)
-#                 print(standard_next_X)
+                kernel = GPy.kern.RBF(input_dim=dim,lengthscale=lengthscale,variance=variance)
+                m = GPy.models.GPRegression(train_X.reshape(-1,dim), train_Y.reshape(-1,1),kernel)
+                m.Gaussian_noise.fix(noise)
+                np.random.seed(i)
+                standard_next_X,erm_value = ERM_acquisition_opt(m,bounds=standard_bounds,fstar=fstar_standard,mean_temp=mean_temp)
+                print(standard_next_X)
                 
             
             
-#             if np.any(np.abs((standard_next_X - train_X)).sum(axis=1) <= (dim*3e-4)):
-#                 print('random')
-#                 X_next = get_initial_points(bounds, 1,device,dtype,seed=i)
+            if np.any(np.abs((standard_next_X - train_X)).sum(axis=1) <= (dim*3e-4)):
+                print('random')
+                X_next = get_initial_points(bounds, 1,device,dtype,seed=i)
             
-#             else:        
-#                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)     
+            else:        
+                X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)     
             
-#             Y_next = fun(X_next).reshape(-1,1)
+            Y_next = fun(X_next).reshape(-1,1)
 
-#             # Append data
-#             X_BO = torch.cat((X_BO, X_next), dim=0)
-#             Y_BO = torch.cat((Y_BO, Y_next), dim=0)
+            # Append data
+            X_BO = torch.cat((X_BO, X_next), dim=0)
+            Y_BO = torch.cat((Y_BO, Y_next), dim=0)
 
-#             best_value = float(Y_BO.min())
-#             best_record.append(best_value)
-#             print(best_record[-1])
+            best_value = float(Y_BO.min())
+            best_record.append(best_value)
+            print(best_record[-1])
             
-#             noise = variance*10**(-5)   #adaptive noise
-#             noise = np.round(noise, -int(np.floor(np.log10(noise))))
-#             print('noise: ',noise)
+            noise = variance*10**(-5)   #adaptive noise
+            noise = np.round(noise, -int(np.floor(np.log10(noise))))
+            print('noise: ',noise)
 
 
-#         best_record = np.array(best_record)
-#         BO_ERM.append(best_record)
+        best_record = np.array(best_record)
+        BO_ERM.append(best_record)
         
-#     np.savetxt('exp_res/'+information['name']+'_transformedGP+ERM', BO_ERM, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_transformedGP+ERM', BO_ERM, delimiter=',')
     
     
     ######################## SlogGP+logEI#######################################
     LogEI_noboundary = []
+    boundary_holder = []
+    variance_holder = []
 
     for exp in range(N):
 
@@ -451,6 +448,9 @@ for information in function_information:
 
         best_record = [Y_BO.min().item()]
         np.random.seed(1234)
+        
+        boundarys = []
+        variances = []
 
         for i in range(iter_num):
 
@@ -471,8 +471,11 @@ for information in function_information:
                 train_X = train_X.numpy()
                 
                 lower = -np.min(train_Y)+10**(-6)
-                upper = -fstar_shifted+20
-                
+                if Y_std<=2.0:
+                    upper = -fstar_shifted+100
+                else:
+                    upper = -fstar_shifted+30
+                    
                 c_range = [lower,upper]
 
                 if i%step_size == 0:
@@ -486,6 +489,10 @@ for information in function_information:
                     print('lengthscale is ',lengthscale)
                     print('variance is ',variance)
                     print('lower bound is ',-c*Y_std+Y_min)
+                
+                   
+                boundarys.append(-c*Y_std+Y_min)
+                variances.append(variance)
                 
                 
                 warp_Y = np.log(train_Y+c)
@@ -518,14 +525,23 @@ for information in function_information:
         best_record = np.array(best_record)         
         LogEI_noboundary.append(best_record)
         
-    np.savetxt('exp_res/low_dimension/'+information['name']+'_SLogGP+logEI', LogEI_noboundary, delimiter=',')
+        boundarys = np.array(boundarys) 
+        boundary_holder.append(boundarys)
+        
+        variances = np.array(variances) 
+        variance_holder.append(variances)
+        
+    np.savetxt('final_res/'+information['name']+'_SLogGP+logEI', LogEI_noboundary, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_SLogGP+logEI_boundaryValue', boundary_holder, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_SLogGP+logEI_varianceValue', variance_holder, delimiter=',')
     
     
     
  ######################## SlogGP (boundary)+logEI#######################################
     
     LogEI_boundary = []
-    sigma_holder = []
+    boundary_holder = []
+    variance_holder = []
     
     for exp in range(N):
         
@@ -550,6 +566,9 @@ for information in function_information:
 
         
         uncertainty = 1
+        
+        boundarys = []
+        variances = []
 
         
         for i in range(iter_num):
@@ -573,13 +592,17 @@ for information in function_information:
                 train_X = train_X.numpy()
                 
                 lower = -np.min(train_Y)+10**(-6)
-                upper = -fstar_shifted+20
+                if Y_std<=2.0:
+                    upper = -fstar_shifted+100
+                else:
+                    upper = -fstar_shifted+30
+    
                 c_range = [lower,upper]
                 
                 
                 
                 mu_prior = np.log(-fstar_shifted) 
-                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.1/Y_std)-mu_prior)) * uncertainty 
+                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.2/Y_std)-mu_prior)) * uncertainty 
                 print('sigma prior: ',sigma_prior)
                   
                 prior_parameter = [mu_prior,sigma_prior]
@@ -597,15 +620,28 @@ for information in function_information:
                         temp = (abs(np.log(c) - mu_prior))/sigma_prior
                         #print('temp: ',temp)
                         
+                        MAP = True
+                        
                         if abs(np.log(c) - mu_prior)>tolerance_level*sigma_prior :
+                                                                    
                             temp = (abs(np.log(c) - mu_prior))/ np.sqrt(2*(np.log(-fstar_shifted+0.1)-mu_prior))
                             uncertainty = temp
                         
                             print('Not Use prior')
-                
+                            
+                            MAP = False
                             parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
                                                         lengthscale_range=lengthscale_range,
                                                         variance_range=variance_range,c_range=c_range)  
+                            
+                        if MAP:    
+                            if parameters[1]<0.01:
+                                    print('variance is too small and the booundary can be inaccurate')
+                                    parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
+                                            lengthscale_range=lengthscale_range,
+                                            variance_range=variance_range,c_range=c_range) 
+                                
+                            
                         
                     else:
                         print('sigma is big!!')
@@ -613,18 +649,20 @@ for information in function_information:
                         parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
                                                             lengthscale_range=lengthscale_range,
                                                             variance_range=variance_range,c_range=c_range) 
-                            
-            
-
+                    
+                    
                 
                 lengthscale = parameters[0]
                 variance = parameters[1]
                 c = parameters[2]
                 
-                # print('lengthscale: ',lengthscale)
-                # print('variance: ',variance)
+                print('lengthscale: ',lengthscale)
+                print('variance: ',variance)
                 print('lower bound is ',-c*Y_std+Y_min)
-                            
+                boundarys.append(-c*Y_std+Y_min)
+                variances.append(variance)
+                    
+                    
                 warp_Y = np.log(train_Y+c)
                 mean_warp_Y = np.mean(warp_Y) # use to predict mean
                 warp_Y_standard = warp_Y-mean_warp_Y
@@ -658,14 +696,25 @@ for information in function_information:
         best_record = np.array(best_record)     
         LogEI_boundary.append(best_record)
         
+        boundarys = np.array(boundarys) 
+        boundary_holder.append(boundarys)
+        
+        variances = np.array(variances) 
+        variance_holder.append(variances)
+        
 
         
-    np.savetxt('exp_res/low_dimension/'+information['name']+'_SLogGP(boundary)+logEI', LogEI_boundary, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_SLogGP(boundary)+logEI', LogEI_boundary, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_SLogGP(boundary)+logEI_boundaryValue', boundary_holder, delimiter=',')
+    np.savetxt('final_res/'+information['name']+'_SLogGP(boundary)+logEI_varianceValue', variance_holder, delimiter=',')
+
+
 
  ######################## SlogGP (boundary)+logTEI#######################################
     
     LogTEI_boundary = []
-    sigma_holder = []
+    boundary_holder = []
+    variance_holder = []
     
     for exp in range(N):
         
@@ -690,6 +739,9 @@ for information in function_information:
 
         
         uncertainty = 1
+        
+        boundarys = []
+        variances = []
 
         
         for i in range(iter_num):
@@ -713,13 +765,17 @@ for information in function_information:
                 train_X = train_X.numpy()
                 
                 lower = -np.min(train_Y)+10**(-6)
-                upper = -fstar_shifted+20
+                if Y_std<=2.0:
+                    upper = -fstar_shifted+100
+                else:
+                    upper = -fstar_shifted+30
+    
                 c_range = [lower,upper]
                 
                 
                 
                 mu_prior = np.log(-fstar_shifted) 
-                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.1/Y_std)-mu_prior)) * uncertainty 
+                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.2/Y_std)-mu_prior)) * uncertainty 
                 print('sigma prior: ',sigma_prior)
                   
                 prior_parameter = [mu_prior,sigma_prior]
@@ -737,15 +793,28 @@ for information in function_information:
                         temp = (abs(np.log(c) - mu_prior))/sigma_prior
                         #print('temp: ',temp)
                         
+                        MAP = True
+                        
                         if abs(np.log(c) - mu_prior)>tolerance_level*sigma_prior :
+                                                                    
                             temp = (abs(np.log(c) - mu_prior))/ np.sqrt(2*(np.log(-fstar_shifted+0.1)-mu_prior))
                             uncertainty = temp
                         
                             print('Not Use prior')
-                
+                            
+                            MAP = False
                             parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
                                                         lengthscale_range=lengthscale_range,
                                                         variance_range=variance_range,c_range=c_range)  
+                            
+                        if MAP:    
+                            if parameters[1]<0.01:
+                                    print('variance is too small and the booundary can be inaccurate')
+                                    parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
+                                            lengthscale_range=lengthscale_range,
+                                            variance_range=variance_range,c_range=c_range) 
+                                
+                            
                         
                     else:
                         print('sigma is big!!')
@@ -753,18 +822,20 @@ for information in function_information:
                         parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
                                                             lengthscale_range=lengthscale_range,
                                                             variance_range=variance_range,c_range=c_range) 
-                            
-            
-
+                    
+                    
                 
                 lengthscale = parameters[0]
                 variance = parameters[1]
                 c = parameters[2]
                 
-                # print('lengthscale: ',lengthscale)
-                # print('variance: ',variance)
+                print('lengthscale: ',lengthscale)
+                print('variance: ',variance)
                 print('lower bound is ',-c*Y_std+Y_min)
-                            
+                boundarys.append(-c*Y_std+Y_min)
+                variances.append(variance)
+                    
+                    
                 warp_Y = np.log(train_Y+c)
                 mean_warp_Y = np.mean(warp_Y) # use to predict mean
                 warp_Y_standard = warp_Y-mean_warp_Y
@@ -785,7 +856,6 @@ for information in function_information:
                     standard_next_X = SLogTEI_acquisition_opt(model=m,bounds=standard_bounds,
                                                                 f_best=np.min(train_Y),c=c,
                                                                 f_mean=mean_warp_Y,fstar=fstar_shifted)  
-                    
                     
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
@@ -808,8 +878,10 @@ for information in function_information:
         best_record = np.array(best_record)     
         LogTEI_boundary.append(best_record)
         
-
+        boundarys = np.array(boundarys) 
+        boundary_holder.append(boundarys)
         
-    np.savetxt('exp_res/low_dimension/'+information['name']+'_SLogGP(boundary)+logTEI', LogTEI_boundary, delimiter=',')
-
-
+        variances = np.array(variances) 
+        variance_holder.append(variances)
+          
+    np.savetxt('final_res/'+information['name']+'_SLogGP(boundary)+logTEI', LogTEI_boundary, delimiter=',')

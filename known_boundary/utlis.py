@@ -53,7 +53,7 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
         variance_range = kwargs['variance_range']
         
         parameter_num = 2
-        restart_num = int(3**parameter_num)+5
+        restart_num = int(3**parameter_num)+1
         
         
         for ii in range(restart_num):
@@ -93,7 +93,7 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
         c_range = kwargs['c_range']
                 
         parameter_num = 3
-        restart_num = int(3**parameter_num)+5
+        restart_num = int(3**parameter_num)+1
         
         for ii in range(restart_num):
             
@@ -137,7 +137,7 @@ def opt_model_MLE(train_X,train_Y,dim,model_type,noise=1e-5,seed=0,**kwargs):
 def opt_model_MAP(train_X,train_Y,dim,lengthscale_range,variance_range,c_range,prior_parameter,noise=1e-5,seed=0):
         
         parameter_num = 3
-        restart_num = int(3**parameter_num)+5
+        restart_num = int(3**parameter_num)+1
         
         mu_prior = prior_parameter[0]  #prior_parameter 
         sigma_prior = prior_parameter[1]  #prior_parameter 
