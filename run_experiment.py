@@ -52,29 +52,29 @@ temp['function'] = SixHumpCamel(negate=False)
 temp['fstar'] =  -1.0317
 function_information.append(temp)
 
-# temp={}
-# temp['name']='Hartmann3D' 
-# temp['function'] = Hartmann(dim=3,negate=False)
-# temp['fstar'] =  -3.86278
-# function_information.append(temp)
+temp={}
+temp['name']='Hartmann3D' 
+temp['function'] = Hartmann(dim=3,negate=False)
+temp['fstar'] =  -3.86278
+function_information.append(temp)
 
 
 # temp={}
-# temp['name']='DixonPrice2D' 
-# temp['function'] = DixonPrice(dim=2,negate=False)
+# temp['name']='DixonPrice4D' 
+# temp['function'] = DixonPrice(dim=4,negate=False)
 # temp['fstar'] = 0.
 # temp['min']=True 
 # function_information.append(temp)
 
 # temp={}
-# temp['name']='Rosenbrock2D' 
-# temp['function'] = Rosenbrock(dim=2,negate=False)
+# temp['name']='Rosenbrock5D' 
+# temp['function'] = Rosenbrock(dim=5,negate=False)
 # temp['fstar'] =  0. 
 # function_information.append(temp)
 
 # temp={}
-# temp['name']='Ackley2D' 
-# temp['function'] = Ackley(dim=2,negate=False)
+# temp['name']='Ackley6D' 
+# temp['function'] = Ackley(dim=6,negate=False)
 # temp['fstar'] =  0. 
 # function_information.append(temp)
 
@@ -88,6 +88,7 @@ function_information.append(temp)
 
 
 
+
 for information in function_information:
 
     fun = information['function']
@@ -97,7 +98,7 @@ for information in function_information:
     
     n_init = 4*dim
 
-    N = 100
+    
     fstar = information['fstar']
     
     print('fstar is: ',fstar)
@@ -105,15 +106,18 @@ for information in function_information:
     if dim <=3:
         step_size = 2
         iter_num = 50
-    elif dim<=8:
+        N = 100
+    elif dim<=5:
         step_size = 3
         iter_num = 100
+        N = 100
     else:
         step_size = 3
-        iter_num = 150
+        iter_num = 125
+        N = 50
         
     lengthscale_range = [0.001,2]
-    variance_range = [0.001**2,4**2]
+    variance_range = [0.001**2,5**2]
     noise = 1e-6
     
     print(information['name'])
@@ -140,8 +144,12 @@ for information in function_information:
         for i in range(iter_num):
 
                 print(i)
+                
+                if i%step_size == 0:
+                    Y_mean =  Y_BO.mean()
+                    Y_std = Y_BO.std()
             
-                train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+                train_Y = (Y_BO -Y_mean) / Y_std
                 train_X = normalize(X_BO, bounds)
                 
                 minimal = train_Y.min().item()
@@ -207,10 +215,15 @@ for information in function_information:
         for i in range(iter_num):
 
                 print(i)
+                if i%step_size == 0:
+                    Y_mean =  Y_BO.mean()
+                    Y_std = Y_BO.std()
             
-                train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+                train_Y = (Y_BO -Y_mean) / Y_std
                 train_X = normalize(X_BO, bounds)
-                fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
+            
+          
+                fstar_standard = (fstar - Y_mean) / Y_std
                 fstar_standard = fstar_standard.item()
                 
                 minimal = train_Y.min().item()
@@ -278,11 +291,15 @@ for information in function_information:
 
         for i in range(iter_num):
             
+                if i%step_size == 0:
+                    Y_mean =  Y_BO.mean()
+                    Y_std = Y_BO.std()
             
-                train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+                train_Y = (Y_BO -Y_mean) / Y_std
                 train_X = normalize(X_BO, bounds)
+                           
                 
-                fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
+                fstar_standard = (fstar - Y_mean) / Y_std
                 fstar_standard = fstar_standard.item()
                 
                 train_Y = train_Y.numpy()
@@ -345,13 +362,18 @@ for information in function_information:
         for i in range(iter_num):
 
             print(i)
-            train_Y = (Y_BO - Y_BO.mean()) / Y_BO.std()
+            if i%step_size == 0:
+                Y_mean =  Y_BO.mean()
+                Y_std = Y_BO.std()
+        
+            train_Y = (Y_BO -Y_mean) / Y_std
             train_X = normalize(X_BO, bounds)
+                           
             
             train_Y = train_Y.numpy()
             train_X = train_X.numpy()
             
-            fstar_standard = (fstar - Y_BO.mean()) / Y_BO.std()
+            fstar_standard = (fstar -Y_mean) / Y_std
             fstar_standard = fstar_standard.item()
             
             if not Trans:
@@ -425,7 +447,7 @@ for information in function_information:
         
     np.savetxt('final_res/'+information['name']+'_transformedGP+ERM', BO_ERM, delimiter=',')
     
-    
+
     ######################## SlogGP+logEI#######################################
     LogEI_noboundary = []
     boundary_holder = []
@@ -455,17 +477,21 @@ for information in function_information:
         for i in range(iter_num):
 
                 print('inner loop: ',i)
-            
+                
                 train_Y = Y_BO.numpy()
-                fstar_shifted = fstar - np.min(train_Y)  # shifted lower bound
-
-                Y_min = np.min(train_Y)
+                
+                if i%step_size == 0:
+                    Y_min = np.min(train_Y)
+                    Y_std = np.std(train_Y-Y_min)
+                    
+                fstar_shifted = fstar -Y_min # shifted lower bound
                 train_Y = train_Y - Y_min  # shift Y
                 
                 #scalise Y_shift and fstar_shift
-                Y_std = np.std(train_Y)
                 train_Y = train_Y/Y_std
                 fstar_shifted = fstar_shifted/Y_std
+            
+    
                 
                 train_X = normalize(X_BO, bounds)
                 train_X = train_X.numpy()
@@ -485,12 +511,12 @@ for information in function_information:
                     lengthscale = parameters[0]
                     variance = parameters[1]
                     c = parameters[2]
-                    
-                    print('lengthscale is ',lengthscale)
-                    print('variance is ',variance)
-                    print('lower bound is ',-c*Y_std+Y_min)
                 
-                   
+                print('lengthscale is ',lengthscale)
+                print('variance is ',variance)
+                print('lower bound is ',-c*Y_std+Y_min)
+                
+                    
                 boundarys.append(-c*Y_std+Y_min)
                 variances.append(variance)
                 
@@ -506,7 +532,7 @@ for information in function_information:
                 
                 np.random.seed(i)
                 standard_next_X = SLogEI_acquisition_opt(model=m,bounds=standard_bounds,f_best=np.min(train_Y),c=c,
-                                                         f_mean=mean_warp_Y)
+                                                        f_mean=mean_warp_Y)
                 X_next = unnormalize(torch.tensor(standard_next_X), bounds).reshape(-1,dim)            
                 Y_next = fun(X_next).reshape(-1,1)
 
@@ -530,12 +556,12 @@ for information in function_information:
         
         variances = np.array(variances) 
         variance_holder.append(variances)
-        
+    
     np.savetxt('final_res/'+information['name']+'_SLogGP+logEI', LogEI_noboundary, delimiter=',')
     np.savetxt('final_res/'+information['name']+'_SLogGP+logEI_boundaryValue', boundary_holder, delimiter=',')
     np.savetxt('final_res/'+information['name']+'_SLogGP+logEI_varianceValue', variance_holder, delimiter=',')
-    
-    
+
+
     
  ######################## SlogGP (boundary)+logEI#######################################
     
@@ -577,14 +603,18 @@ for information in function_information:
                 print('uncertainty: ',uncertainty)
                 # print('sigma prior: ',sigma_prior)
             
-                train_Y = Y_BO.numpy()
-                fstar_shifted = fstar - np.min(train_Y)  # shifted lower bound
                 
-                Y_min = np.min(train_Y)
+                
+                train_Y = Y_BO.numpy()
+                
+                if i%step_size == 0:
+                    Y_min = np.min(train_Y)
+                    Y_std = np.std(train_Y-Y_min)
+                    
+                fstar_shifted = fstar -Y_min # shifted lower bound
                 train_Y = train_Y - Y_min  # shift Y
                 
                 #scalise Y_shift and fstar_shift
-                Y_std = np.std(train_Y)
                 train_Y = train_Y/Y_std
                 fstar_shifted = fstar_shifted/Y_std
 
@@ -602,7 +632,7 @@ for information in function_information:
                 
                 
                 mu_prior = np.log(-fstar_shifted) 
-                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.2/Y_std)-mu_prior)) * uncertainty 
+                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.25/Y_std)-mu_prior)) * uncertainty 
                 print('sigma prior: ',sigma_prior)
                   
                 prior_parameter = [mu_prior,sigma_prior]
@@ -617,14 +647,14 @@ for information in function_information:
 
                         c = parameters[2]
                         
-                        temp = (abs(np.log(c) - mu_prior))/sigma_prior
+                        #temp = (abs(np.log(c) - mu_prior))/sigma_prior
                         #print('temp: ',temp)
                         
                         MAP = True
                         
                         if abs(np.log(c) - mu_prior)>tolerance_level*sigma_prior :
                                                                     
-                            temp = (abs(np.log(c) - mu_prior))/ np.sqrt(2*(np.log(-fstar_shifted+0.1)-mu_prior))
+                            temp = (abs(np.log(c) - mu_prior))/ sigma_prior #np.sqrt(2*(np.log(-fstar_shifted+0.2)-mu_prior))
                             uncertainty = temp
                         
                             print('Not Use prior')
@@ -635,7 +665,7 @@ for information in function_information:
                                                         variance_range=variance_range,c_range=c_range)  
                             
                         if MAP:    
-                            if parameters[1]<0.01:
+                            if parameters[1]<0.25**2:
                                     print('variance is too small and the booundary can be inaccurate')
                                     parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
                                             lengthscale_range=lengthscale_range,
@@ -709,7 +739,6 @@ for information in function_information:
     np.savetxt('final_res/'+information['name']+'_SLogGP(boundary)+logEI_varianceValue', variance_holder, delimiter=',')
 
 
-
  ######################## SlogGP (boundary)+logTEI#######################################
     
     LogTEI_boundary = []
@@ -750,14 +779,18 @@ for information in function_information:
                 print('uncertainty: ',uncertainty)
                 # print('sigma prior: ',sigma_prior)
             
-                train_Y = Y_BO.numpy()
-                fstar_shifted = fstar - np.min(train_Y)  # shifted lower bound
                 
-                Y_min = np.min(train_Y)
+                
+                train_Y = Y_BO.numpy()
+                
+                if i%step_size == 0:
+                    Y_min = np.min(train_Y)
+                    Y_std = np.std(train_Y-Y_min)
+                    
+                fstar_shifted = fstar -Y_min # shifted lower bound
                 train_Y = train_Y - Y_min  # shift Y
                 
                 #scalise Y_shift and fstar_shift
-                Y_std = np.std(train_Y)
                 train_Y = train_Y/Y_std
                 fstar_shifted = fstar_shifted/Y_std
 
@@ -775,7 +808,7 @@ for information in function_information:
                 
                 
                 mu_prior = np.log(-fstar_shifted) 
-                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.2/Y_std)-mu_prior)) * uncertainty 
+                sigma_prior = np.sqrt(2*(np.log(-fstar_shifted+0.25/Y_std)-mu_prior)) * uncertainty 
                 print('sigma prior: ',sigma_prior)
                   
                 prior_parameter = [mu_prior,sigma_prior]
@@ -790,14 +823,14 @@ for information in function_information:
 
                         c = parameters[2]
                         
-                        temp = (abs(np.log(c) - mu_prior))/sigma_prior
+                        #temp = (abs(np.log(c) - mu_prior))/sigma_prior
                         #print('temp: ',temp)
                         
                         MAP = True
                         
                         if abs(np.log(c) - mu_prior)>tolerance_level*sigma_prior :
                                                                     
-                            temp = (abs(np.log(c) - mu_prior))/ np.sqrt(2*(np.log(-fstar_shifted+0.1)-mu_prior))
+                            temp = (abs(np.log(c) - mu_prior))/ sigma_prior #np.sqrt(2*(np.log(-fstar_shifted+0.2)-mu_prior))
                             uncertainty = temp
                         
                             print('Not Use prior')
@@ -808,7 +841,7 @@ for information in function_information:
                                                         variance_range=variance_range,c_range=c_range)  
                             
                         if MAP:    
-                            if parameters[1]<0.01:
+                            if parameters[1]<0.25**2:
                                     print('variance is too small and the booundary can be inaccurate')
                                     parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,
                                             lengthscale_range=lengthscale_range,
@@ -883,5 +916,8 @@ for information in function_information:
         
         variances = np.array(variances) 
         variance_holder.append(variances)
-          
+        
+
+        
     np.savetxt('final_res/'+information['name']+'_SLogGP(boundary)+logTEI', LogTEI_boundary, delimiter=',')
+
