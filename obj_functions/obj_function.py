@@ -118,7 +118,7 @@ class XGBoost:
             self.y_train1 = y_train1
             
         elif task == 'breast':
-            df_data = pd.read_csv('Breast_Cancer_Wisconsin.csv')
+            df_data = pd.read_csv('obj_functions/Breast_Cancer_Wisconsin.csv')
             df_data = df_data.drop(axis=1,columns=['id'])
             class_mapping = {'M':0, 'B':1}
             df_data['diagnosis'] = df_data['diagnosis'].map(class_mapping)
