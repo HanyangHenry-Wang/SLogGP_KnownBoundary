@@ -20,9 +20,9 @@ def EI(X,dim,f_best,model,f_star='no'): # X is a 2-dimensional array because we 
       z = (f_star - mean)/np.sqrt(var)        
       out2=(f_star - mean) * norm.cdf(z) + np.sqrt(var) * norm.pdf(z)
       
-      part3 = (f_best-f_star)*norm.cdf((f_star - mean)/np.sqrt(var))
+      #part3 = (f_best-f_star)*norm.cdf((f_star - mean)/np.sqrt(var))
       
-      out = out1 - out2 + part3
+      out = out1 - out2 #+ part3
     
   
   return out.ravel()  #make the shape to be 1 dimensional
