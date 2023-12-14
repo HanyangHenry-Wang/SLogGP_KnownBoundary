@@ -38,17 +38,17 @@ dtype = torch.double
 function_information = []
 
 
-temp={}
-temp['name']='Branin2D' 
-temp['function'] = Branin(negate=True)
-temp['fstar'] =  -0.397887 
-function_information.append(temp)
+# temp={}
+# temp['name']='Branin2D' 
+# temp['function'] = Branin(negate=True)
+# temp['fstar'] =  -0.397887 
+# function_information.append(temp)
 
-temp={}
-temp['name']='Beale2D' 
-temp['function'] = Beale(negate=True)
-temp['fstar'] =  0. 
-function_information.append(temp)
+# temp={}
+# temp['name']='Beale2D' 
+# temp['function'] = Beale(negate=True)
+# temp['fstar'] =  0. 
+# function_information.append(temp)
 
 # temp={}
 # temp['name']='Ackley6D' 
@@ -57,18 +57,18 @@ function_information.append(temp)
 # function_information.append(temp)
 
 
-temp={}
-temp['name']='SixHumpCamel2D' 
-temp['function'] = SixHumpCamel(negate=True)
-temp['fstar'] =  -1.0317
-function_information.append(temp)
-
-
 # temp={}
-# temp['name']='Hartmann3D' 
-# temp['function'] = Hartmann(dim=3,negate=False)
-# temp['fstar'] =  -3.86278
+# temp['name']='SixHumpCamel2D' 
+# temp['function'] = SixHumpCamel(negate=True)
+# temp['fstar'] =  -1.0317
 # function_information.append(temp)
+
+
+temp={}
+temp['name']='Hartmann3D' 
+temp['function'] = Hartmann(dim=3,negate=True)
+temp['fstar'] =  -3.86278
+function_information.append(temp)
 
 
 # temp={}
