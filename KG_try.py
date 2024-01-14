@@ -86,14 +86,14 @@ function_information.append(temp)
 
 # temp={}
 # temp['name']='Ackley6D' 
-# temp['function'] = Ackley(dim=6,negate=False)
+# temp['function'] = Ackley(dim=6,negate=True)
 # temp['fstar'] =  0. 
 # function_information.append(temp)
 
 
 # temp={}
 # temp['name']='Powell8D' 
-# temp['function'] = Powell(dim=8,negate=False)
+# temp['function'] = Powell(dim=8,negate=True)
 # temp['fstar'] = 0. 
 # temp['min']=True 
 # function_information.append(temp)
@@ -244,7 +244,7 @@ for information in function_information:
                 #             )
                 
                 
-                AF = qKnowledgeGradient(model, num_fantasies=16)
+                AF = qKnowledgeGradient(model, num_fantasies=8)
                 with manual_seed(1234):
                     standard_next_X, _ = optimize_acqf(
                         acq_function=AF,
@@ -257,7 +257,7 @@ for information in function_information:
 
                 print('KG pick: ',standard_next_X)
                 
-                X_next = unnormalize(standard_next_X_final, bounds).reshape(-1,dim)            
+                X_next = unnormalize(standard_next_X, bounds).reshape(-1,dim)            
                 Y_next = fun(X_next_final).reshape(-1,1)
 
                 # Append data

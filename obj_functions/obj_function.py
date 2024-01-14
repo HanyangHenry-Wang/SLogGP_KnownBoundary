@@ -101,21 +101,21 @@ class XGBoost:
             
             self.X_train1 = X_train1
             self.y_train1 = y_train1
-        elif task == 'iris':
-            df_data = pd.read_csv('obj_functions/Iris.csv')
-            class_mapping = {'Iris-setosa':0, 'Iris-versicolor':1,'Iris-virginica':2}
-            df_data['Species'] = df_data['Species'].map(class_mapping)
-            df_data = df_data.drop(axis=1,columns=['Id'])
+        # elif task == 'iris':
+        #     df_data = pd.read_csv('obj_functions/Iris.csv')
+        #     class_mapping = {'Iris-setosa':0, 'Iris-versicolor':1,'Iris-virginica':2}
+        #     df_data['Species'] = df_data['Species'].map(class_mapping)
+        #     df_data = df_data.drop(axis=1,columns=['Id'])
             
-            X = df_data.loc[:, df_data.columns!='Species']
-            y = df_data['Species']
+        #     X = df_data.loc[:, df_data.columns!='Species']
+        #     y = df_data['Species']
             
-            outputs = np.array(y)
-            inputs = np.array(X)
-            X_train1, X_test1, y_train1, y_test1 = train_test_split(inputs, outputs, test_size=0.01, random_state=1)
+        #     outputs = np.array(y)
+        #     inputs = np.array(X)
+        #     X_train1, X_test1, y_train1, y_test1 = train_test_split(inputs, outputs, test_size=0.01, random_state=1)
             
-            self.X_train1 = X_train1
-            self.y_train1 = y_train1
+        #     self.X_train1 = X_train1
+        #     self.y_train1 = y_train1
             
         elif task == 'breast':
             df_data = pd.read_csv('obj_functions/Breast_Cancer_Wisconsin.csv')
@@ -151,3 +151,51 @@ class XGBoost:
             score = np.array(cross_val_score(reg, X=self.X_train1, y=self.y_train1).mean())
       
         return 100-torch.tensor([score*100])
+    
+    
+
+from botorch.test_functions.synthetic import SyntheticTestFunction
+
+# from __future__ import annotations
+
+import math
+from typing import List, Optional, Tuple, Union
+
+import torch
+from botorch.exceptions.errors import InputDataError
+from botorch.test_functions.base import BaseTestProblem, ConstrainedBaseTestProblem
+# from botorch.test_functions.utils import round_nearest
+from torch import Tensor
+
+
+class Sphere(SyntheticTestFunction):
+
+
+    _optimal_value = 0.0
+    _check_grad_at_opt: bool = False
+
+    def __init__(
+        self,
+        dim: int = 2,
+        noise_std: Optional[float] = None,
+        negate: bool = False,
+        bounds: Optional[List[Tuple[float, float]]] = None,
+    ) -> None:
+        r"""
+        Args:
+            dim: The (input) dimension.
+            noise_std: Standard deviation of the observation noise.
+            negate: If True, negate the function.
+            bounds: Custom bounds for the function specified as (lower, upper) pairs.
+        """
+        self.dim = dim
+        if bounds is None:
+            bounds = [(-10., 10.) for _ in range(self.dim)]
+        self._optimizers = [tuple(0.0 for _ in range(self.dim))]
+        super().__init__(noise_std=noise_std, negate=negate, bounds=bounds)
+
+
+
+    def evaluate_true(self, X: Tensor) -> Tensor:
+        res = torch.linalg.norm(X+3., dim=-1)
+        return res**2
