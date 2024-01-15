@@ -24,6 +24,20 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 dtype = torch.double
 
 
+def EI_posterior(X,dim,f_best,model,f_star='no'): # X is a 2-dimensional array because we will use it in scipy.minimize
+
+  X = X.reshape(-1,dim)
+  
+  mean,var = model.predict_noiseless(X)
+  
+
+#   if f_star == 'no':
+#       z = (f_best - mean)/np.sqrt(var)        
+#       out=(f_best - mean) * norm.cdf(z) 
+  
+  return mean,var
+
+
 function_information = []
 fstar=0.397887 
 distances = np.array([0.001,0.1,1,2,5,10,50,100,200])
@@ -50,7 +64,8 @@ function_information.append(temp)
 for information in function_information:
 
     total_record = []
-    total_record2 = []
+    total_record_mean = []
+    total_record_variance = []
 
     for dist in distances:
         
@@ -81,7 +96,8 @@ for information in function_information:
         noise = 1e-6
         
         print(information['name'])
-        ratio_holder = []
+        mean_holder = []
+        variance_holder = []
         dis_holder = []
         ######################## SlogGP+logEI#######################################
 
@@ -177,8 +193,62 @@ for information in function_information:
             print('dis is: ',dis)
             dis_holder.append(dis)
             
+            # check EE balance
+            
+            #################################
+            train_Y = Y_BO.numpy()
+            fstar = np.min(train_Y) - 1.
+            
+            Y_min = np.min(train_Y)
+            Y_std = np.std(train_Y-Y_min)
+            
+            fstar_shifted = fstar -Y_min # shifted lower bound
+            train_Y = train_Y - Y_min  # shift Y
+            
+            #scalise Y_shift and fstar_shift
+            train_Y = train_Y/Y_std
+            fstar_shifted = fstar_shifted/Y_std
+        
+            
+            train_X = normalize(X_BO, bounds)
+            train_X = train_X.numpy()
+            
+            lower = -fstar_shifted
+            upper = 10**(-6)+lower
+            
+        
+                
+            c_range = [lower,upper]
+            
+        
+            parameters = opt_model_MLE(train_X,train_Y,dim,'SLogGP',noise=noise,seed=i,lengthscale_range=lengthscale_range,
+                                    variance_range=variance_range,c_range=c_range)                
+
+            lengthscale = parameters[0]
+            variance = parameters[1]
+            c = parameters[2]
+            
+            warp_Y = np.log(train_Y+c)
+            mean_warp_Y = np.mean(warp_Y) # use to predict mean
+            warp_Y_standard = warp_Y-mean_warp_Y
             
             
+            kernel = GPy.kern.RBF(input_dim=dim,lengthscale= lengthscale,variance=variance)  
+            m = GPy.models.GPRegression(train_X, warp_Y_standard,kernel)
+            m.Gaussian_noise.variance.fix(noise)
+            
+            gp_mean,gp_var = m.predict_noiseless(standard_next_X.reshape(-1,dim))
+            
+            sloggp_mean = np.exp((gp_mean+mean_warp_Y)+0.5*gp_var)
+            mean_holder.append(((sloggp_mean-c)*Y_std+Y_min)[0][0] - Y_BO.min().item())
+            sloggp_variance = (np.exp(gp_var)-1)*np.exp(gp_var+2*(gp_mean+mean_warp_Y))
+            variance_holder.append((sloggp_variance*Y_std**2)[0][0])
+            
+            print('mean gap: ',(sloggp_mean-c)*Y_std+Y_min - Y_BO.min().item())
+            print('variance: ',sloggp_variance*Y_std**2)
+    
+            # train_Y = Y_BO.numpy() 
+            # train_Y = (train_Y - np.mean(train_Y))/np.std(train_Y)
             # parameters = opt_model_MLE(train_X,train_Y,dim,'GP',noise=noise,seed=i,lengthscale_range=lengthscale_range,variance_range=variance_range) 
             # lengthscale = parameters[0]
             # variance = parameters[1]
@@ -188,28 +258,26 @@ for information in function_information:
             # m.Gaussian_noise.fix(noise)
             
             # acq_val = EI(X=standard_next_X,dim=dim,f_best=np.min(train_Y),model=m,f_star='no')
-            # mean,var = m.predict_noiseless(standard_next_X.reshape(-1,dim))
-            # f_best = np.min(train_Y)
-            # z = (f_best - mean)/np.sqrt(var)        
-            # out=(f_best - mean) * norm.cdf(z)
-            # ratio = out/acq_val[0]
-            # ratio_holder.append(ratio)
-            # print('acquisition is ',acq_val[0])
-            # print('exploit is ',out)
-            # print('ratio is: ',ratio)
-        #     acq_val = SLogEI(X=standard_next_X,dim=dim,f_best=np.min(train_Y),c=c,f_mean=mean_warp_Y,model=m)
-        #     mean,var = m.predict_noiseless(standard_next_X.reshape(-1,dim))
-        #     mu = mean+mean_warp_Y
-        #     predictMean = np.exp(mu+0.5*var)-c
-        #     print('mean is ',predictMean)
-        #     print('so far best is: ',np.min(train_Y) )
-        #     print('acqusition is: ',acq_val)
-        #     ratio = (np.min(train_Y) - predictMean)/acq_val
-        #     ratio_holder.append(ratio)
+            # PM,PV = EI_posterior(X=standard_next_X,dim=dim,f_best=np.min(train_Y),model=m,f_star='no')
             
-        # total_record2.append(ratio_holder)
+            # #ratio = acq_val_exploitation/acq_val
+            # mean_holder.append(PM[0][0])
+            # #print('mean is: ',PM)
+            # variance_holder.append(PV[0][0])
+            # #print('variance is: ',PV)
+            
+
+            
+        total_record_mean.append(mean_holder)
+        total_record_variance.append(variance_holder)
         total_record.append(dis_holder)
         
     total_record = np.array(total_record).reshape(-1,N)
     np.savetxt('distance/'+information['name']+'_SLogGP+logEI_distance', total_record, delimiter=',')
+    
+    total_record_mean = np.array(total_record_mean).reshape(-1,N)
+    np.savetxt('distance/'+information['name']+'_SLogGP+logEI_posteriorMean', total_record_mean, delimiter=',')
+    
+    total_record_variance = np.array(total_record_variance).reshape(-1,N)
+    np.savetxt('distance/'+information['name']+'_SLogGP+logEI_posteriorVariance', total_record_variance, delimiter=',')
     
