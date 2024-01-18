@@ -38,6 +38,15 @@ dtype = torch.double
 function_information = []
 
 
+temp={}
+temp['name']='Push4D' 
+f_class = obj_functions.push_problems.push4
+tx_1 = 3.5; ty_1 = 4
+fun = f_class(tx_1, ty_1,negate=True)
+temp['function'] = fun
+temp['fstar'] =  0.
+function_information.append(temp)
+
 # temp={}
 # temp['name']='Branin2D' 
 # temp['function'] = Branin(negate=True)
@@ -64,11 +73,11 @@ function_information = []
 # function_information.append(temp)
 
 
-temp={}
-temp['name']='Hartmann3D' 
-temp['function'] = Hartmann(dim=3,negate=True)
-temp['fstar'] =  -3.86278
-function_information.append(temp)
+# temp={}
+# temp['name']='Hartmann3D' 
+# temp['function'] = Hartmann(dim=3,negate=True)
+# temp['fstar'] =  -3.86278
+# function_information.append(temp)
 
 
 # temp={}
@@ -144,7 +153,7 @@ for information in function_information:
     elif dim<=5:
         step_size = 3
         iter_num = 100
-        N = 100
+        N = 50
     else:
         step_size = 3
         iter_num = 150
@@ -233,7 +242,7 @@ for information in function_information:
                 
                 print(best_record[-1])
                 
-                # AF = DiscreteKnowledgeGradient(model=model, bounds=torch.tensor(standard_bounds.T),num_discrete_points=400) .to(device)
+                AF = DiscreteKnowledgeGradient(model=model, bounds=torch.tensor(standard_bounds.T),num_discrete_points=300) .to(device)
                 
                 # AF = HybridKnowledgeGradient(
                 #                 model=model,
@@ -244,21 +253,24 @@ for information in function_information:
                 #             )
                 
                 
-                AF = qKnowledgeGradient(model, num_fantasies=8)
-                with manual_seed(1234):
-                    standard_next_X, _ = optimize_acqf(
-                        acq_function=AF,
-                        bounds=torch.tensor(standard_bounds.T) .to(device),
-                        q=1,
-                        num_restarts=3*dim,
-                        raw_samples=30*dim,
-                        options={},
-                    )
+                #AF = qKnowledgeGradient(model, num_fantasies=16)
+                
+                
+                #with manual_seed(1234):
+                standard_next_X, _ = optimize_acqf(
+                    acq_function=AF,
+                    bounds=torch.tensor(standard_bounds.T) .to(device),
+                    q=1,
+                    num_restarts=3*dim,
+                    raw_samples=30*dim,
+                    options={},
+                )
 
                 print('KG pick: ',standard_next_X)
                 
+                # check whether it is too close to the historical data
                 X_next = unnormalize(standard_next_X, bounds).reshape(-1,dim)            
-                Y_next = fun(X_next_final).reshape(-1,1)
+                Y_next = fun(X_next).reshape(-1,1)
 
                 # Append data
                 X_BO = torch.cat((X_BO, X_next), dim=0)
@@ -271,5 +283,5 @@ for information in function_information:
         best_record = np.array(best_record) 
         BO_KG.append(best_record)
             
-    np.savetxt('KG/'+information['name']+'_GP+KG', BO_KG, delimiter=',')
+    np.savetxt('KG/'+information['name']+'_GP+KG_part1', BO_KG, delimiter=',')
     
