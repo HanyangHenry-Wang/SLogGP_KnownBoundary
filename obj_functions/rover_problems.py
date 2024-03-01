@@ -44,6 +44,8 @@ def Rover_8D(X,seed=1234):
                                 force_goal=False,
                                 s_range=space_range)
         
+        
+        
         for x in X:
                 domain.set_params(x)
                 cost_holder.append(domain.estimate_cost())
@@ -213,6 +215,7 @@ def create_large_domain(dim,
     n_points = int(dim/2) 
     traj = PointBSpline(dim=2, num_points=n_points)
     
+    # np.random.seed(43)
 
     domain = RoverDomain(cost_fn,
                          start=start,
@@ -226,7 +229,7 @@ def create_large_domain(dim,
     return domain
 
 def l2cost_original(x, point):
-        return 10 * np.linalg.norm(x - point, 1)
+        return 10 * np.linalg.norm(x - point, 2)
     
 def Rover_original(X,dim):
         
@@ -235,8 +238,8 @@ def Rover_original(X,dim):
         cost_holder = []
 
         domain = create_large_domain(dim=dim,
-                                     force_start=False,
-                                    force_goal=False,
+                                     force_start=True,
+                                    force_goal=True,
                                     start_miss_cost=l2cost_original,
                                     goal_miss_cost=l2cost_original)
         

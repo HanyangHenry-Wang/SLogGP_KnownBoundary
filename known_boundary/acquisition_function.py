@@ -33,7 +33,7 @@ def EI_acquisition_opt(model,bounds,f_best,f_star='no'): #bound should an array 
   dim = bounds.shape[0]
   opts ={'maxiter':50*dim,'maxfun':50*dim,'disp': False}
 
-  restart_num = 3*dim
+  restart_num = min(3*dim,30)
   X_candidate = []
   AF_candidate = []
 
@@ -216,12 +216,12 @@ def SLogEI_acquisition_opt(model,bounds,f_best,c,f_mean): #bound should an array
   dim = bounds.shape[0]
   opts ={'maxiter':50*dim,'maxfun':50*dim,'disp': False}
 
-  restart_num = 3*dim
+  restart_num = min(3*dim,30)
   X_candidate = []
   AF_candidate = []
 
   for i in range(restart_num):
-    init_X = np.random.uniform(bounds[:, 0], bounds[:, 1],size=(30*dim, dim))
+    init_X = np.random.uniform(bounds[:, 0], bounds[:, 1],size=(min(30*dim,300), dim))
     value_holder =  SLogEI(init_X,dim,f_best,c,f_mean,model)
       
     x0=init_X[np.argmax(value_holder)]
@@ -265,12 +265,12 @@ def SLogTEI_acquisition_opt(model,bounds,f_best,c,f_mean,fstar): #bound should a
   dim = bounds.shape[0]
   opts ={'maxiter':50*dim,'maxfun':50*dim,'disp': False}
 
-  restart_num = 3*dim
+  restart_num = min(3*dim,30)
   X_candidate = []
   AF_candidate = []
 
   for i in range(restart_num):
-    init_X = np.random.uniform(bounds[:, 0], bounds[:, 1],size=(30*dim, dim))
+    init_X = np.random.uniform(bounds[:, 0], bounds[:, 1],size=(min(30*dim,300), dim))
     value_holder =  SLogTEI(init_X,dim,f_best,c,f_mean,fstar,model)
       
     x0=init_X[np.argmax(value_holder)]
