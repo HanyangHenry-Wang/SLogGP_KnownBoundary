@@ -77,7 +77,7 @@ class push4:
     array([9.0733461])
     """
 
-    def __init__(self, t1_x=0, t1_y=0,negate=False):
+    def __init__(self, t1_x=0, t1_y=0):
         self.dim = 4
         self.lb = np.zeros(self.dim)
         self.ub = np.ones(self.dim)
@@ -105,8 +105,6 @@ class push4:
                             [0.,1.],  
                             [0.,1.]
                             ]).T)
-        
-        self.negate = negate
             
 
 
@@ -124,13 +122,8 @@ class push4:
             val[i, :] = push_4D(
                 x[i, :], self.t1_x, self.t1_y, self.o1_x, self.o1_y, plotting_args
             )
-            
-        if not  self.negate:
-            res = torch.tensor(val.ravel())
-        elif  self.negate:
-            res = -torch.tensor(val.ravel())
 
-        return res #torch.tensor(val.ravel())
+        return torch.tensor(val.ravel())     # I changed it back to Nov-15 version.
 
 
 class push8:

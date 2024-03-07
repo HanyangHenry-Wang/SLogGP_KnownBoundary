@@ -124,7 +124,7 @@ class RoverDomain:
         
         
 
-        self.traj.set_params(params + self.rnd_stream.normal(0, 1e-4, params.shape),
+        self.traj.set_params(params + self.rnd_stream.normal(0, 1e-1, params.shape),
                              self.start if self.force_start else None,
                              self.goal if self.force_goal else None)
         

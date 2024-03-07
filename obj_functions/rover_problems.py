@@ -10,7 +10,7 @@ import torch
 
 
 def l2cost(x, point):
-        return 1. * np.linalg.norm(x - point, 1)
+        return np.linalg.norm(x - point, 2)**2 #2. * np.linalg.norm(x - point, 1) + np.linalg.norm(x - point, 2)**2
 
 
 def Rover_8D(X,seed=1234):
@@ -256,7 +256,7 @@ class rover_original:
         
         self.dim = dim
         
-        self.bounds = torch.tensor(np.array([[-0.1,1.1]*dim]).reshape(dim,2).T)
+        self.bounds = torch.tensor(np.array([[0.,1.]*dim]).reshape(dim,2).T)
         
         self.negate = negate
         
