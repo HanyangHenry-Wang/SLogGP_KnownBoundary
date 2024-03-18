@@ -112,7 +112,7 @@ class RoverDomain:
 
         if self.rnd_stream is None:
             np.random.seed(1234)
-            self.rnd_stream = np.random.RandomState(np.random.randint(0, 2 ** 32 - 1))
+            self.rnd_stream = np.random.RandomState(np.random.randint(0, 2 ** 16 - 1))
 
     # return the negative cost which need to be optimized
     def __call__(self, params,n_samples=1000):
@@ -124,7 +124,7 @@ class RoverDomain:
         
         
 
-        self.traj.set_params(params + self.rnd_stream.normal(0, 1e-1, params.shape),
+        self.traj.set_params(params + self.rnd_stream.normal(0,  1e-4, params.shape),
                              self.start if self.force_start else None,
                              self.goal if self.force_goal else None)
         
@@ -226,7 +226,7 @@ class GMCost:
         if X.ndim == 1:
             X = X[None, :]
 
-        return np.exp(-np.sum(((X[:, :, None] - self.c.T[None, :, :]) / self.s.T[None, :, :]) ** 2, axis=1)).dot(self.w)
+        return (np.exp(-np.sum(((X[:, :, None] - self.c.T[None, :, :]) / self.s.T[None, :, :]) ** 2, axis=1)).dot(self.w)).reshape(-1,1)
 
 
 def plot_2d_rover(roverdomain, ngrid_points=100, ntraj_points=100, colormap='RdBu', draw_colorbar=True):
